@@ -23,6 +23,12 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'phone',
+        'photo_url',
+        'department',
+        'position',
+        'manager_id',
+        'bio',
     ];
 
     /**
@@ -57,6 +63,56 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the activities for the user.
+     */
+    public function activities()
+    {
+        return $this->hasMany(Activity::class)->latest();
+    }
+
+    /**
+     * Get the manager of this user.
+     */
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    /**
+     * Get the subordinates of this user.
+     */
+    public function subordinates()
+    {
+        return $this->hasMany(User::class, 'manager_id');
+    }
+
+    /**
+     * Get the projects assigned to this user.
+     */
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_team_member', 'user_id', 'team_member_id');
+    }
+
+    /**
+     * Get total hours logged by user.
+     */
+    public function getTotalHoursAttribute()
+    {
+        return $this->timeEntries()->sum('duration_minutes') / 60;
+    }
+
+    /**
+     * Get average hours per day.
+     */
+    public function getAverageHoursPerDayAttribute()
+    {
+        $entries = $this->timeEntries()->count();
+        if ($entries === 0) return 0;
+        return round($this->total_hours / $entries, 2);
+    }
+
+    /**
      * Check if user is admin.
      */
     public function isAdmin(): bool
@@ -70,5 +126,61 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /**
+     * Get the personal accounts for the user.
+     */
+    public function personalAccounts()
+    {
+        return $this->hasMany(PersonalAccount::class);
+    }
+
+    /**
+     * Get the personal incomes for the user.
+     */
+    public function personalIncomes()
+    {
+        return $this->hasMany(PersonalIncome::class);
+    }
+
+    /**
+     * Get the personal expenses for the user.
+     */
+    public function personalExpenses()
+    {
+        return $this->hasMany(PersonalExpense::class);
+    }
+
+    /**
+     * Get the personal loans for the user.
+     */
+    public function personalLoans()
+    {
+        return $this->hasMany(PersonalLoan::class);
+    }
+
+    /**
+     * Get total income for the user.
+     */
+    public function getTotalIncomeAttribute()
+    {
+        return $this->personalIncomes()->sum('amount');
+    }
+
+    /**
+     * Get total expenses for the user.
+     */
+    public function getTotalExpensesAttribute()
+    {
+        return $this->personalExpenses()->sum('amount');
+    }
+
+    /**
+     * Get cash on hand (total income - total expenses).
+     */
+    public function getCashOnHandAttribute()
+    {
+        return $this->total_income - $this->total_expenses;
     }
 }

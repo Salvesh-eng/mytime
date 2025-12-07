@@ -27,6 +27,12 @@
                             <option value="in-progress" {{ old('status', $project->status) == 'in-progress' ? 'selected' : '' }}>🚀 In Progress</option>
                             <option value="completed" {{ old('status', $project->status) == 'completed' ? 'selected' : '' }}>✅ Completed</option>
                             <option value="on-hold" {{ old('status', $project->status) == 'on-hold' ? 'selected' : '' }}>⏸️ On Hold</option>
+                            <option value="cancelled" {{ old('status', $project->status) == 'cancelled' ? 'selected' : '' }}>❌ Cancelled</option>
+                            <option value="archived" {{ old('status', $project->status) == 'archived' ? 'selected' : '' }}>📦 Archived</option>
+                            <option value="awaiting-input" {{ old('status', $project->status) == 'awaiting-input' ? 'selected' : '' }}>📝 Awaiting Input</option>
+                            <option value="not-started" {{ old('status', $project->status) == 'not-started' ? 'selected' : '' }}>🚫 Not Started</option>
+                            <option value="testing" {{ old('status', $project->status) == 'testing' ? 'selected' : '' }}>🧪 Testing</option>
+                            <option value="overdue" {{ old('status', $project->status) == 'overdue' ? 'selected' : '' }}>⚠️ Overdue</option>
                         </select>
                         @error('status')<span style="color: #DC2626; font-size: 12px;">{{ $message }}</span>@enderror
                     </div>

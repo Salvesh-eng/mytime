@@ -6,9 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\TimeEntry;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\TeamMember;
+use App\Models\PersonalIncome;
+use App\Models\PersonalExpense;
+use App\Models\FinancialTransaction;
+use App\Models\FinancialBudget;
+use App\Models\FinancialInvoice;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class AnalyticsController extends Controller
 {
@@ -37,6 +44,22 @@ class AnalyticsController extends Controller
         $projectStatus = $this->getProjectStatusData();
         $teamUtilization = $this->getTeamUtilizationData($start, $end);
         $hoursByProject = $this->getHoursByProject($start, $end);
+        
+        // Get financial data
+        $financialData = $this->getFinancialData($start, $end);
+        $monthlyFinancialData = $this->getMonthlyFinancialData();
+        $transactionsByCategory = $this->getTransactionsByCategory($start, $end);
+        $invoiceData = $this->getInvoiceData($start, $end);
+        
+        // Get additional chart data
+        $weeklyProductivity = $this->getWeeklyProductivity();
+        $projectProgress = $this->getProjectProgress();
+        $teamPerformance = $this->getTeamPerformance();
+        $taskCompletion = $this->getTaskCompletionData();
+        $monthlyActivity = $this->getMonthlyActivity();
+        $incomeSources = $this->getIncomeSources($start, $end);
+        $savingsData = $this->getSavingsData();
+        $netProfitTrend = $this->getNetProfitTrend();
 
         return view('admin.analytics.index', [
             'currentData' => $currentData,
@@ -48,6 +71,18 @@ class AnalyticsController extends Controller
             'projectStatus' => $projectStatus,
             'teamUtilization' => $teamUtilization,
             'hoursByProject' => $hoursByProject,
+            'financialData' => $financialData,
+            'monthlyFinancialData' => $monthlyFinancialData,
+            'transactionsByCategory' => $transactionsByCategory,
+            'invoiceData' => $invoiceData,
+            'weeklyProductivity' => $weeklyProductivity,
+            'projectProgress' => $projectProgress,
+            'teamPerformance' => $teamPerformance,
+            'taskCompletion' => $taskCompletion,
+            'monthlyActivity' => $monthlyActivity,
+            'incomeSources' => $incomeSources,
+            'savingsData' => $savingsData,
+            'netProfitTrend' => $netProfitTrend,
         ]);
     }
 
@@ -328,5 +363,424 @@ class AnalyticsController extends Controller
             'message' => 'PDF export requires PDF generation package installation',
             'hint' => 'composer require barryvdh/laravel-dompdf',
         ], 501);
+    }
+
+    /**
+     * Get financial data for date range.
+     */
+    private function getFinancialData(Carbon $start, Carbon $end)
+    {
+        $income = FinancialTransaction::where('type', 'income')
+            ->where('status', 'completed')
+            ->whereBetween('transaction_date', [$start, $end])
+            ->sum('amount');
+
+        $expenses = FinancialTransaction::where('type', 'expense')
+            ->where('status', 'completed')
+            ->whereBetween('transaction_date', [$start, $end])
+            ->sum('amount');
+
+        $pendingTransactions = FinancialTransaction::where('status', 'pending')
+            ->whereBetween('transaction_date', [$start, $end])
+            ->sum('amount');
+
+        $totalBudget = FinancialBudget::where('status', 'active')
+            ->whereBetween('start_date', [$start, $end])
+            ->sum('allocated_amount');
+
+        $budgetSpent = FinancialBudget::where('status', 'active')
+            ->whereBetween('start_date', [$start, $end])
+            ->sum('spent_amount');
+
+        $paidInvoices = FinancialInvoice::where('status', 'paid')
+            ->whereBetween('issue_date', [$start, $end])
+            ->sum('total_amount');
+
+        return [
+            'income' => round($income, 2),
+            'expenses' => round($expenses, 2),
+            'net_profit' => round($income - $expenses, 2),
+            'pending_transactions' => round($pendingTransactions, 2),
+            'total_budget' => round($totalBudget, 2),
+            'budget_spent' => round($budgetSpent, 2),
+            'budget_remaining' => round($totalBudget - $budgetSpent, 2),
+            'paid_invoices' => round($paidInvoices, 2),
+        ];
+    }
+
+    /**
+     * Get monthly financial data for the year.
+     */
+    private function getMonthlyFinancialData()
+    {
+        $months = [];
+        $income = [];
+        $expenses = [];
+
+        for ($month = 1; $month <= 12; $month++) {
+            $startDate = Carbon::createFromDate(now()->year, $month, 1)->startOfMonth();
+            $endDate = Carbon::createFromDate(now()->year, $month, 1)->endOfMonth();
+
+            $months[] = $startDate->format('M');
+
+            $monthIncome = FinancialTransaction::where('type', 'income')
+                ->where('status', 'completed')
+                ->whereBetween('transaction_date', [$startDate, $endDate])
+                ->sum('amount');
+
+            $monthExpense = FinancialTransaction::where('type', 'expense')
+                ->where('status', 'completed')
+                ->whereBetween('transaction_date', [$startDate, $endDate])
+                ->sum('amount');
+
+            $income[] = round($monthIncome, 2);
+            $expenses[] = round($monthExpense, 2);
+        }
+
+        return [
+            'months' => $months,
+            'income' => $income,
+            'expenses' => $expenses,
+        ];
+    }
+
+    /**
+     * Get transactions by category.
+     */
+    private function getTransactionsByCategory(Carbon $start, Carbon $end)
+    {
+        $categories = ['salary', 'equipment', 'software', 'travel', 'utilities', 'marketing', 'client_payment', 'other'];
+        $data = [];
+
+        foreach ($categories as $category) {
+            $amount = FinancialTransaction::where('category', $category)
+                ->where('status', 'completed')
+                ->whereBetween('transaction_date', [$start, $end])
+                ->sum('amount');
+
+            if ($amount > 0) {
+                $data[] = [
+                    'category' => ucfirst(str_replace('_', ' ', $category)),
+                    'amount' => round($amount, 2),
+                ];
+            }
+        }
+
+        return collect($data)->sortByDesc('amount')->values();
+    }
+
+    /**
+     * Get invoice data.
+     */
+    private function getInvoiceData(Carbon $start, Carbon $end)
+    {
+        $paid = FinancialInvoice::where('status', 'paid')
+            ->whereBetween('issue_date', [$start, $end])
+            ->count();
+
+        $sent = FinancialInvoice::where('status', 'sent')
+            ->whereBetween('issue_date', [$start, $end])
+            ->count();
+
+        $draft = FinancialInvoice::where('status', 'draft')
+            ->whereBetween('issue_date', [$start, $end])
+            ->count();
+
+        $overdue = FinancialInvoice::where('status', 'overdue')
+            ->whereBetween('issue_date', [$start, $end])
+            ->count();
+
+        return [
+            'paid' => $paid,
+            'sent' => $sent,
+            'draft' => $draft,
+            'overdue' => $overdue,
+            'total' => $paid + $sent + $draft + $overdue,
+        ];
+    }
+
+    /**
+     * Get weekly productivity data (tasks/projects completed per day of week).
+     */
+    private function getWeeklyProductivity()
+    {
+        $days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        $values = [];
+
+        // Get projects completed in last 4 weeks grouped by day of week
+        $startDate = Carbon::now()->subWeeks(4);
+        
+        // SQLite uses strftime('%w', date) where 0=Sunday, 1=Monday, etc.
+        // MySQL uses DAYOFWEEK where 1=Sunday, 2=Monday, etc.
+        $driver = DB::connection()->getDriverName();
+        
+        for ($i = 0; $i < 7; $i++) {
+            // For our array: 0=Mon, 1=Tue, ..., 6=Sun
+            // SQLite %w: 0=Sun, 1=Mon, ..., 6=Sat
+            $sqliteDay = ($i + 1) % 7; // Convert our index to SQLite day (Mon=1, Tue=2, ..., Sun=0)
+            $mysqlDay = $i + 2; // MySQL: Mon=2, Tue=3, ..., Sun=1
+            if ($mysqlDay > 7) $mysqlDay = 1;
+            
+            if ($driver === 'sqlite') {
+                $count = Project::where('status', 'completed')
+                    ->where('updated_at', '>=', $startDate)
+                    ->whereRaw("cast(strftime('%w', updated_at) as integer) = ?", [$sqliteDay])
+                    ->count();
+                
+                $timeEntryCount = TimeEntry::where('entry_date', '>=', $startDate)
+                    ->whereRaw("cast(strftime('%w', entry_date) as integer) = ?", [$sqliteDay])
+                    ->count();
+            } else {
+                $count = Project::where('status', 'completed')
+                    ->where('updated_at', '>=', $startDate)
+                    ->whereRaw('DAYOFWEEK(updated_at) = ?', [$mysqlDay])
+                    ->count();
+                
+                $timeEntryCount = TimeEntry::where('entry_date', '>=', $startDate)
+                    ->whereRaw('DAYOFWEEK(entry_date) = ?', [$mysqlDay])
+                    ->count();
+            }
+            
+            $values[] = $count + round($timeEntryCount / 4); // Average over 4 weeks
+        }
+
+        return [
+            'labels' => $days,
+            'values' => $values,
+        ];
+    }
+
+    /**
+     * Get project progress data (top projects by progress).
+     */
+    private function getProjectProgress()
+    {
+        $projects = Project::where('is_archived', false)
+            ->whereNotNull('progress')
+            ->orderByDesc('updated_at')
+            ->take(5)
+            ->get(['name', 'progress', 'status']);
+
+        return [
+            'labels' => $projects->pluck('name')->toArray(),
+            'values' => $projects->pluck('progress')->toArray(),
+            'statuses' => $projects->pluck('status')->toArray(),
+        ];
+    }
+
+    /**
+     * Get team performance data (team members with task counts).
+     */
+    private function getTeamPerformance()
+    {
+        // Get team members with their project assignments
+        $teamMembers = TeamMember::with('projects')
+            ->where('status', 'active')
+            ->take(5)
+            ->get();
+
+        if ($teamMembers->isEmpty()) {
+            // Fallback to users if no team members
+            $users = User::where('status', 'active')
+                ->take(5)
+                ->get();
+
+            return [
+                'labels' => $users->pluck('name')->toArray(),
+                'values' => $users->map(function ($user) {
+                    return $user->timeEntries()->count();
+                })->toArray(),
+            ];
+        }
+
+        return [
+            'labels' => $teamMembers->pluck('name')->toArray(),
+            'values' => $teamMembers->map(function ($member) {
+                return $member->projects()->count();
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get task completion data (completed, in progress, pending).
+     */
+    private function getTaskCompletionData()
+    {
+        $total = Project::where('is_archived', false)->count();
+        
+        $completed = Project::where('is_archived', false)
+            ->where('status', 'completed')
+            ->count();
+        
+        $inProgress = Project::where('is_archived', false)
+            ->where('status', 'in-progress')
+            ->count();
+        
+        $pending = Project::where('is_archived', false)
+            ->whereIn('status', ['planning', 'on-hold'])
+            ->count();
+
+        // Calculate percentages
+        $completedPct = $total > 0 ? round(($completed / $total) * 100) : 0;
+        $inProgressPct = $total > 0 ? round(($inProgress / $total) * 100) : 0;
+        $pendingPct = $total > 0 ? round(($pending / $total) * 100) : 0;
+
+        return [
+            'labels' => ['Completed', 'In Progress', 'Pending'],
+            'values' => [$completedPct, $inProgressPct, $pendingPct],
+            'counts' => [$completed, $inProgress, $pending],
+        ];
+    }
+
+    /**
+     * Get monthly activity data (projects completed per month).
+     */
+    private function getMonthlyActivity()
+    {
+        $months = [];
+        $values = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $months[] = $date->format('M');
+
+            $count = Project::where('status', 'completed')
+                ->whereYear('updated_at', $date->year)
+                ->whereMonth('updated_at', $date->month)
+                ->count();
+
+            $values[] = $count;
+        }
+
+        return [
+            'labels' => $months,
+            'values' => $values,
+        ];
+    }
+
+    /**
+     * Get income sources breakdown.
+     */
+    private function getIncomeSources(Carbon $start, Carbon $end)
+    {
+        $user = Auth::user();
+        
+        // Get personal income by source
+        $incomeBySource = PersonalIncome::where('user_id', $user->id ?? 1)
+            ->whereBetween('date', [$start, $end])
+            ->select('source', DB::raw('SUM(amount) as total'))
+            ->groupBy('source')
+            ->orderByDesc('total')
+            ->take(5)
+            ->get();
+
+        if ($incomeBySource->isEmpty()) {
+            // Fallback to financial transactions
+            $incomeBySource = FinancialTransaction::where('type', 'income')
+                ->where('status', 'completed')
+                ->whereBetween('transaction_date', [$start, $end])
+                ->select('category as source', DB::raw('SUM(amount) as total'))
+                ->groupBy('category')
+                ->orderByDesc('total')
+                ->take(5)
+                ->get();
+        }
+
+        return [
+            'labels' => $incomeBySource->pluck('source')->map(function ($source) {
+                return ucfirst(str_replace('_', ' ', $source ?? 'Other'));
+            })->toArray(),
+            'values' => $incomeBySource->pluck('total')->toArray(),
+        ];
+    }
+
+    /**
+     * Get savings data for the last 6 months.
+     */
+    private function getSavingsData()
+    {
+        $user = Auth::user();
+        $months = [];
+        $savings = [];
+        $investments = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $months[] = $date->format('M');
+            $startOfMonth = $date->copy()->startOfMonth();
+            $endOfMonth = $date->copy()->endOfMonth();
+
+            // Calculate savings (income - expenses for the month)
+            $income = PersonalIncome::where('user_id', $user->id ?? 1)
+                ->whereBetween('date', [$startOfMonth, $endOfMonth])
+                ->sum('amount');
+
+            $expenses = PersonalExpense::where('user_id', $user->id ?? 1)
+                ->whereBetween('date', [$startOfMonth, $endOfMonth])
+                ->sum('amount');
+
+            $monthlySavings = max(0, $income - $expenses);
+            $savings[] = round($monthlySavings, 2);
+
+            // Get investments (expense category = investment)
+            $investment = PersonalExpense::where('user_id', $user->id ?? 1)
+                ->where('category', 'investment')
+                ->whereBetween('date', [$startOfMonth, $endOfMonth])
+                ->sum('amount');
+
+            $investments[] = round($investment, 2);
+        }
+
+        return [
+            'labels' => $months,
+            'savings' => $savings,
+            'investments' => $investments,
+        ];
+    }
+
+    /**
+     * Get net profit trend for the last 6 months.
+     */
+    private function getNetProfitTrend()
+    {
+        $user = Auth::user();
+        $months = [];
+        $profits = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $months[] = $date->format('M');
+            $startOfMonth = $date->copy()->startOfMonth();
+            $endOfMonth = $date->copy()->endOfMonth();
+
+            // Calculate from personal finance
+            $income = PersonalIncome::where('user_id', $user->id ?? 1)
+                ->whereBetween('date', [$startOfMonth, $endOfMonth])
+                ->sum('amount');
+
+            $expenses = PersonalExpense::where('user_id', $user->id ?? 1)
+                ->whereBetween('date', [$startOfMonth, $endOfMonth])
+                ->sum('amount');
+
+            // Fallback to financial transactions if no personal data
+            if ($income == 0 && $expenses == 0) {
+                $income = FinancialTransaction::where('type', 'income')
+                    ->where('status', 'completed')
+                    ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
+                    ->sum('amount');
+
+                $expenses = FinancialTransaction::where('type', 'expense')
+                    ->where('status', 'completed')
+                    ->whereBetween('transaction_date', [$startOfMonth, $endOfMonth])
+                    ->sum('amount');
+            }
+
+            $profits[] = round($income - $expenses, 2);
+        }
+
+        return [
+            'labels' => $months,
+            'values' => $profits,
+        ];
     }
 }

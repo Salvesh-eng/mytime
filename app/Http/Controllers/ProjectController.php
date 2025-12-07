@@ -104,8 +104,37 @@ class ProjectController extends Controller
             'progress' => 'required|integer|min:0|max:100',
         ]);
 
-        $project->update(['progress' => $validated['progress']]);
+        $updateData = ['progress' => $validated['progress']];
 
-        return response()->json(['success' => true, 'progress' => $project->progress]);
+        // Auto-complete project when progress reaches 100%
+        if ($validated['progress'] == 100 && $project->status !== 'completed') {
+            $updateData['status'] = 'completed';
+        }
+
+        $project->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'progress' => $project->progress,
+            'status' => $project->status,
+        ]);
+    }
+
+    /**
+     * Update project status via AJAX.
+     */
+    public function updateStatus(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:planning,in-progress,completed,on-hold',
+        ]);
+
+        $project->update(['status' => $validated['status']]);
+
+        return response()->json([
+            'success' => true,
+            'status' => $project->status,
+            'message' => 'Project status updated successfully!',
+        ]);
     }
 }

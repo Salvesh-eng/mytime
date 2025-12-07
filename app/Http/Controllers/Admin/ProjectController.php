@@ -22,18 +22,53 @@ class ProjectController extends Controller
      */
     public function index()
     {
+        $perPage = request('per_page', 10);
         $projects = Project::where('is_archived', false)
             ->with('tags', 'budget', 'client', 'teamMembers')
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->paginate($perPage);
 
         $categories = ProjectTag::distinct()->pluck('category');
-        $statuses = ['planning', 'in-progress', 'completed', 'on-hold'];
+        $statuses = ['Active', 'In Progress', 'Completed', 'Pending Review', 'Started', 'On Hold', 'Cancelled', 'Archived','Awaiting Input','Not Started','Testing'];
+
+        // Get projects completed per day for the current month
+        $currentMonth = Carbon::now();
+        $startOfMonth = $currentMonth->clone()->startOfMonth();
+        $endOfMonth = $currentMonth->clone()->endOfMonth();
+
+        $completedPerDay = Project::where('is_archived', false)
+            ->where('status', 'completed')
+            ->whereBetween('updated_at', [$startOfMonth, $endOfMonth])
+            ->get()
+            ->groupBy(function ($project) {
+                return $project->updated_at->format('Y-m-d');
+            })
+            ->map(function ($projects) {
+                return $projects->count();
+            })
+            ->toArray();
+
+        // Create array with all days of the month
+        $monthlyData = [];
+        for ($day = 1; $day <= $endOfMonth->day; $day++) {
+            $date = $startOfMonth->clone()->addDays($day - 1)->format('Y-m-d');
+            $monthlyData[$date] = $completedPerDay[$date] ?? 0;
+        }
+
+        // Count overdue projects
+        $overdueCount = Project::where('is_archived', false)
+            ->where('status', '!=', 'completed')
+            ->whereNotNull('due_date')
+            ->where('due_date', '<', now()->toDateString())
+            ->count();
 
         return view('admin.projects.index', [
             'projects' => $projects,
             'categories' => $categories,
             'statuses' => $statuses,
+            'monthlyData' => $monthlyData,
+            'currentMonth' => $currentMonth->format('F Y'),
+            'overdueCount' => $overdueCount,
         ]);
     }
 
@@ -74,14 +109,22 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'required|in:planning,in-progress,completed,on-hold',
+            'status' => 'required|in:planning,in-progress,completed,on-hold,cancelled,archived,awaiting-input,not-started,testing,overdue',
             'start_date' => 'required|date',
-            'due_date' => 'nullable|date|after:start_date',
+            'due_date' => 'required|date|after:start_date',
             'estimated_hours' => 'nullable|numeric|min:0',
             'template_id' => 'nullable|exists:project_templates,id',
+            'progress' => 'nullable|numeric|min:0|max:100',
+            'team_members' => 'nullable|array',
+            'team_members.*' => 'exists:team_members,id',
         ]);
 
         $project = Project::create($validated);
+
+        // Sync team members from form
+        if (!empty($validated['team_members'])) {
+            $project->teamMembers()->sync($validated['team_members']);
+        }
 
         // If using a template
         if ($request->template_id) {
@@ -160,7 +203,7 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'required|in:planning,in-progress,completed,on-hold',
+            'status' => 'required|in:planning,in-progress,completed,on-hold,cancelled,archived,awaiting-input,not-started,testing,overdue',
             'start_date' => 'required|date',
             'due_date' => 'nullable|date|after:start_date',
             'progress' => 'nullable|integer|min:0|max:100',
@@ -174,7 +217,7 @@ class ProjectController extends Controller
             $project->teamMembers()->sync($request->team_members);
         }
 
-        return redirect()->back()->with('success', 'Project updated successfully!');
+        return redirect()->route('admin.projects.index')->with('success', 'Project updated successfully!');
     }
 
     /**
@@ -199,18 +242,14 @@ class ProjectController extends Controller
     }
 
     /**
-     * Permanently delete an archived project.
+     * Permanently delete a project.
      */
     public function destroy(Project $project)
     {
-        if (!$project->is_archived) {
-            return redirect()->back()->with('error', 'Only archived projects can be permanently deleted!');
-        }
-
         $project->delete();
 
-        return redirect()->route('admin.projects.archived')
-            ->with('success', 'Project permanently deleted!');
+        return redirect()->route('admin.projects.index')
+            ->with('success', 'Project deleted successfully!');
     }
 
     /**
@@ -450,5 +489,72 @@ class ProjectController extends Controller
             });
 
         return response()->json($projects);
+    }
+
+    /**
+     * Update project progress and auto-update status based on progress percentage.
+     * 
+     * Status logic:
+     * - 100%: completed
+     * - 75-99%: in-progress (almost done)
+     * - 50-74%: in-progress
+     * - 25-49%: in-progress (getting started)
+     * - 1-24%: planning (just started)
+     * - 0%: planning
+     */
+    public function updateProgress(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'progress' => 'required|integer|min:0|max:100',
+            'status' => 'nullable|string|in:planning,in-progress,completed,on-hold'
+        ]);
+
+        $progress = $validated['progress'];
+        
+        // Auto-determine status based on progress if not explicitly provided
+        if (!$request->has('status') || empty($validated['status'])) {
+            if ($progress === 100) {
+                $status = 'completed';
+            } elseif ($progress >= 25) {
+                $status = 'in-progress';
+            } else {
+                $status = 'planning';
+            }
+        } else {
+            $status = $validated['status'];
+        }
+
+        $project->update([
+            'progress' => $progress,
+            'status' => $status,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Progress updated successfully',
+            'data' => [
+                'id' => $project->id,
+                'progress' => $project->progress,
+                'status' => $project->status,
+            ]
+        ]);
+    }
+
+    /**
+     * Update project status via AJAX.
+     */
+    public function updateStatus(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:planning,in-progress,completed,on-hold,cancelled,archived,awaiting-input,not-started,testing,overdue',
+        ]);
+
+        $project->update(['status' => $validated['status']]);
+
+        return response()->json([
+            'success' => true,
+            'status' => $project->status,
+            'message' => 'Project status updated successfully!',
+        ]);
     }
 }

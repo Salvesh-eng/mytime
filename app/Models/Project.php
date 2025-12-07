@@ -19,6 +19,7 @@ class Project extends Model
         'progress',
         'is_archived',
         'archived_at',
+        'completed_at',
         'estimated_hours',
         'actual_hours',
         'slug',
@@ -28,6 +29,7 @@ class Project extends Model
         'start_date' => 'date',
         'due_date' => 'date',
         'archived_at' => 'datetime',
+        'completed_at' => 'datetime',
         'is_archived' => 'boolean',
     ];
 
@@ -37,7 +39,24 @@ class Project extends Model
 
         static::creating(function ($model) {
             if (!$model->slug) {
-                $model->slug = Str::slug($model->name);
+                $baseSlug = Str::slug($model->name);
+                $slug = $baseSlug;
+                $counter = 1;
+
+                // Ensure slug uniqueness
+                while (self::where('slug', $slug)->exists()) {
+                    $slug = $baseSlug . '-' . $counter;
+                    $counter++;
+                }
+
+                $model->slug = $slug;
+            }
+        });
+
+        static::updating(function ($model) {
+            // Set completed_at timestamp when status changes to completed
+            if ($model->isDirty('status') && $model->status === 'completed' && !$model->completed_at) {
+                $model->completed_at = now();
             }
         });
     }
@@ -169,5 +188,26 @@ class Project extends Model
     public function getTagsArrayAttribute()
     {
         return $this->tags()->pluck('category')->toArray();
+    }
+
+    /**
+     * Check if project is overdue
+     */
+    public function isOverdue()
+    {
+        return $this->due_date && 
+               $this->due_date < now()->toDateString() && 
+               $this->status !== 'completed' && 
+               $this->status !== 'overdue';
+    }
+
+    /**
+     * Scope to get overdue projects
+     */
+    public function scopeOverdue($query)
+    {
+        return $query->where('status', '!=', 'completed')
+                     ->where('status', '!=', 'overdue')
+                     ->where('due_date', '<', now()->toDateString());
     }
 }

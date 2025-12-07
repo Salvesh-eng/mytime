@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Mytime - Time Managment system')</title>
     <link rel="icon" type="image/png" href="/pictures/logo.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -33,27 +34,88 @@
         }
 
         .sidebar {
-            width: 250px;
-            background: linear-gradient(180deg, #0F172A 0%, #1e293b 100%);
-            color: #E6EEF8;
-            padding: 20px;
+            width: 280px;
+            background: linear-gradient(180deg, #FFB3D9 0%, #B3D9FF 50%, #B3FFB3 100%);
+            color: #ca1111ff;
+            padding: 0;
             position: fixed;
             height: 100vh;
+            overflow: hidden;
+            box-shadow: 4px 0 15px rgba(255, 179, 217, 0.3);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+        }
+
+        .sidebar:hover {
+            width: 280px;
             overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(180deg, #FFB3D9 0%, #B3D9FF 50%, #B3FFB3 100%);
+        }
+
+        .sidebar.collapsed {
+            width: 70px;s
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed:hover {
+            width: 70px;
+        }
+
+        .sidebar.collapsed h2 {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-label {
+            display: none;
+        }
+
+        .sidebar-toggle-btn {
+            position: absolute;
+            right: 8px;
+            top: 20px;
+            background: rgba(20, 101, 128, 0.1);
+            border: 1px solid #ADD8E6;
+            color: #ADD8E6;
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            min-height: 36px;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: rgba(173, 216, 230, 0.2);
+            box-shadow: 0 0 8px rgba(173, 216, 230, 0.3);
         }
 
         .sidebar-logo {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
-            border-radius: 8px;
+            width: 120px;
+            height: 120px;
+            margin: 20px auto;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            background: rgba(37, 99, 235, 0.1);
-            border: 2px solid #06B6D4;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid #ADD8E6;
+            box-shadow: 0 4px 12px rgba(173, 216, 230, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed .sidebar-logo {
+            width: 50px;
+            height: 50px;
+            margin: 12px auto;
+            border-width: 2px;
         }
 
         .sidebar-logo img {
@@ -63,46 +125,144 @@
         }
 
         .sidebar h2 {
-            margin-bottom: 30px;
-            font-size: 20px;
-            color: #06B6D4;
-            font-weight: 700;
-            letter-spacing: 0.5px;
+            margin: 0 20px 10px 20px;
+            padding: 10px 0;
+            font-size: 24px;
+            color: #2b2a2aff;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-align: center;
+            border-bottom: 2px solid rgba(51, 51, 51, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar nav {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar nav::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar nav::-webkit-scrollbar-track {
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .sidebar nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 215, 0, 0.5);
         }
 
         .sidebar nav ul {
             list-style: none;
+            padding: 0 10px;
         }
 
         .sidebar nav ul li {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
         }
 
         .sidebar nav ul li a {
-            color: #cbd5e1;
+            color: #f8fafc;
             text-decoration: none;
-            display: block;
-            padding: 12px 15px;
-            border-radius: 6px;
-            transition: all 0.3s;
-            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid transparent;
+            font-weight: 500;
+            font-size: 14px;
+            position: relative;
         }
 
         .sidebar nav ul li a:hover {
-            background-color: rgba(37, 99, 235, 0.2);
-            border-left-color: #06B6D4;
-            color: #06B6D4;
+            background-color: rgba(173, 216, 230, 0.25);
+            border-left-color: #ffffff;
+            color: #ffffff;
+            transform: translateX(4px);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
         }
 
         .sidebar nav ul li a.active {
-            background: rgba(37, 99, 235, 0.3);
-            border-left-color: #06B6D4;
-            color: #06B6D4;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.15) 100%);
+            border-left-color: #ffffff;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.25);
+            position: relative;
+        }
+
+        .sidebar nav ul li a.active::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: #ADD8E6;
+            border-radius: 2px;
+        }
+
+        .sidebar nav ul li a span:first-child {
+            font-size: 20px;
+            min-width: 24px;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar nav ul li a .nav-label {
+            flex: 1;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .sidebar.collapsed nav ul li a {
+            justify-content: center;
+            padding: 14px 12px;
+        }
+
+        .sidebar.collapsed nav ul li a span:first-child {
+            margin: 0;
+        }
+
+        /* Tooltip for collapsed state */
+        .sidebar.collapsed nav ul li a::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 70px;
+            background: rgba(173, 216, 230, 0.9);
+            color: #0F172A;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1002;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar.collapsed nav ul li a:hover::before {
+            opacity: 1;
         }
 
         .main-content {
-            margin-left: 250px;
+            margin-left: 280px;
             flex: 1;
             padding: 20px;
             padding-bottom: 80px;
@@ -110,10 +270,15 @@
             flex-direction: column;
             min-height: 100vh;
             width: 100%;
+            transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-content.sidebar-collapsed {
+            margin-left: 70px;
         }
 
         .header {
-            background-color: white;
+            background: linear-gradient(135deg, #FFB3D9 0%, #B3D9FF 50%, #B3FFB3 100%);
             padding: 12px 16px;
             border-radius: 4px;
             margin-bottom: 16px;
@@ -121,7 +286,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-left: 4px solid #2563EB;
+            border-left: 4px solid #FFB3D9;
         }
 
         .header h1 {
@@ -926,7 +1091,10 @@
 </head>
 <body>
     <div class="container">
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
+            <button class="sidebar-toggle-btn" onclick="toggleSidebarCollapse()" title="Collapse/Expand">
+                <span id="toggle-icon">◀</span>
+            </button>
             <div class="sidebar-logo">
                 <img src="/pictures/logo.png" alt="Mytime Logo">
             </div>
@@ -934,20 +1102,28 @@
             <nav>
                 <ul>
                     @if(auth()->user()->isAdmin())
-                        <li><a href="/admin/dashboard" class="@if(request()->is('admin/dashboard')) active @endif"><span>📊</span> <span>Dashboard</span></a></li>
-                        <li><a href="/admin/projects" class="@if(request()->is('admin/projects')) active @endif"><span>📁</span> <span>Projects</span></a></li>
-                        <li><a href="/admin/projects/create" class="@if(request()->is('admin/projects/create')) active @endif"><span>✨</span> <span>New Project</span></a></li>
-                        <li><a href="/admin/analytics" class="@if(request()->is('admin/analytics')) active @endif"><span>📈</span> <span>Analytics</span></a></li>
-                        <li><a href="/admin/notifications" class="@if(request()->is('admin/notifications')) active @endif"><span>🔔</span> <span>Notifications</span></a></li>
-                        <li><a href="/admin/team-members" class="@if(request()->is('admin/team-members*')) active @endif"><span>👥</span> <span>Team</span></a></li>
-                        <li><a href="/admin/users" class="@if(request()->is('admin/users*')) active @endif"><span>👤</span> <span>Users</span></a></li>
-                        <li><a href="/admin/time-entries" class="@if(request()->is('admin/time-entries*')) active @endif"><span>⏱️</span> <span>Time Logs</span></a></li>
-                        <li><a href="/admin/reports" class="@if(request()->is('admin/reports*')) active @endif"><span>📄</span> <span>Reports</span></a></li>
+                        <li><a href="/admin/dashboard" class="@if(request()->is('admin/dashboard')) active @endif" data-label="Dashboard"><span>📊</span> <span class="nav-label">Dashboard</span></a></li>
+                        <li><a href="/admin/projects" class="@if(request()->is('admin/projects')) active @endif" data-label="Projects"><span>📁</span> <span class="nav-label">Projects</span></a></li>
+                        <li><a href="/admin/projects/create" class="@if(request()->is('admin/projects/create')) active @endif" data-label="New Project"><span>✨</span> <span class="nav-label">New Project</span></a></li>
+                        <li><a href="/admin/financial" class="@if(request()->is('admin/financial*')) active @endif" data-label="Financial"><span>����</span> <span class="nav-label">Financial</span></a></li>
+                        <li><a href="/admin/analytics" class="@if(request()->is('admin/analytics')) active @endif" data-label="Analytics"><span>📈</span> <span class="nav-label">Analytics</span></a></li>
+                        <li><a href="/admin/notifications" class="@if(request()->is('admin/notifications')) active @endif" data-label="Notifications"><span>🔔</span> <span class="nav-label">Notifications</span></a></li>
+                        <li><a href="/admin/team-members" class="@if(request()->is('admin/team-members*')) active @endif" data-label="Team"><span>👥</span> <span class="nav-label">Team</span></a></li>
+                        <li><a href="/admin/users" class="@if(request()->is('admin/users*')) active @endif" data-label="Users"><span>👤</span> <span class="nav-label">Users</span></a></li>
+                        <li><a href="/admin/time-entries" class="@if(request()->is('admin/time-entries*')) active @endif" data-label="Time Logs"><span>⏱️</span> <span class="nav-label">Time Logs</span></a></li>
+                        <li><a href="/admin/reports" class="@if(request()->is('admin/reports*')) active @endif" data-label="Reports"><span>📊</span> <span class="nav-label">Reports</span></a></li>
+                        <li><a href="/admin/reports/builder" class="@if(request()->is('admin/reports/builder')) active @endif" data-label="Build Report"><span>🛠️</span> <span class="nav-label">Build Report</span></a></li>
+                        <li><a href="/admin/reports/list" class="@if(request()->is('admin/reports/list')) active @endif" data-label="My Reports"><span>📋</span> <span class="nav-label">My Reports</span></a></li>
+                        <li><a href="/motivation" class="@if(request()->is('motivation*')) active @endif" data-label="Motivation"><span>✨</span> <span class="nav-label">Motivation</span></a></li>
+                        <li><a href="/profile" class="@if(request()->is('profile*')) active @endif" data-label="Profile"><span>⚙️</span> <span class="nav-label">Profile</span></a></li>
                     @else
-                        <li><a href="/dashboard" class="@if(request()->is('dashboard')) active @endif"><span>📊</span> <span>Dashboard</span></a></li>
-                        <li><a href="/add-time" class="@if(request()->is('add-time')) active @endif"><span>⏱️</span> <span>Start Time</span></a></li>
-                        <li><a href="/my-logs" class="@if(request()->is('my-logs*')) active @endif"><span>📋</span> <span>My Logs</span></a></li>
-                        <li><a href="/profile" class="@if(request()->is('profile*')) active @endif"><span>⚙️</span> <span>Profile</span></a></li>
+                        <li><a href="/dashboard" class="@if(request()->is('dashboard')) active @endif" data-label="Dashboard"><span>📊</span> <span class="nav-label">Dashboard</span></a></li>
+                        <li><a href="/add-time" class="@if(request()->is('add-time')) active @endif" data-label="Start Time"><span>⏱️</span> <span class="nav-label">Start Time</span></a></li>
+                        <li><a href="/my-logs" class="@if(request()->is('my-logs*')) active @endif" data-label="My Logs"><span>📋</span> <span class="nav-label">My Logs</span></a></li>
+                        <li><a href="/personal-finance" class="@if(request()->is('personal-finance*')) active @endif" data-label="Finance"><span>💰</span> <span class="nav-label">Finance</span></a></li>
+                        <li><a href="/reports" class="@if(request()->is('reports*')) active @endif" data-label="Reports"><span>📊</span> <span class="nav-label">Reports</span></a></li>
+                        <li><a href="/motivation" class="@if(request()->is('motivation*')) active @endif" data-label="Motivation"><span>✨</span> <span class="nav-label">Motivation</span></a></li>
+                        <li><a href="/profile" class="@if(request()->is('profile*')) active @endif" data-label="Profile"><span>⚙️</span> <span class="nav-label">Profile</span></a></li>
                     @endif
                 </ul>
             </nav>
@@ -956,7 +1132,7 @@
         <div class="main-content">
             <!-- Hamburger Menu Toggle -->
             <div style="position: fixed; top: 20px; left: 20px; z-index: 1000; display: none;" id="hamburger-menu-btn">
-                <button onclick="toggleSidebar()" style="background: #0F172A; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-size: 20px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">☰</button>
+                <button onclick="toggleSidebarCollapse()" style="background: #0F172A; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-size: 20px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">☰</button>
             </div>
 
             <!-- Breadcrumb Navigation -->
@@ -985,6 +1161,32 @@
                         <div class="clock-period" id="clock-period">AM</div>
                         <div class="clock-date" id="clock-date">Loading...</div>
                     </div>
+                    <!-- News Panel -->
+                    <div style="position: relative;">
+                        <div class="notification-bell" onclick="toggleNewsPanel()" id="news-bell" style="cursor: pointer;">
+                            📰
+                        </div>
+                        <div class="notification-dropdown" id="news-dropdown" style="width: 380px; max-height: 500px;">
+                            <div class="notification-header">Latest News & Updates</div>
+                            <div id="news-content" style="padding: 16px;">
+                                <div style="text-align: center; color: #6B7280; font-size: 14px; padding: 20px;">Loading news...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weather Dropdown -->
+                    <div style="position: relative;">
+                        <div class="notification-bell" onclick="toggleWeatherPanel()" id="weather-bell" style="cursor: pointer;">
+                            🌤️
+                        </div>
+                        <div class="notification-dropdown" id="weather-dropdown" style="width: 320px;">
+                            <div class="notification-header">Weather Information</div>
+                            <div id="weather-content" style="padding: 20px; text-align: center; color: #6B7280;">
+                                <div style="font-size: 14px; margin-bottom: 10px;">Loading weather data...</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div style="position: relative;">
                         <div class="notification-bell" onclick="toggleNotificationPanel()" id="notification-bell">
                             🔔
@@ -1054,7 +1256,7 @@
 
             <div class="footer">
                 <p style="margin-top: 0; border-top: none; padding-top: 0;">
-                    All rights reserved © 2025 by <span style="color: #06B6D4; font-weight: 600;">Ek Qodor kei Coding</span>
+                    All rights reserved © 2025 by <span style="color: #06B6D4; font-weight: 600;">Ek Coder Ki Coding</span>
                 </p>
             </div>
         </div>
@@ -1089,21 +1291,19 @@
         });
 
         // Toggle Sidebar
-        function toggleSidebar() {
+        function toggleSidebarCollapse() {
             const sidebar = document.querySelector('.sidebar');
             const mainContent = document.querySelector('.main-content');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
             sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('sidebar-collapsed');
             
             const isCollapsed = sidebar.classList.contains('collapsed');
             localStorage.setItem('sidebar-collapsed', isCollapsed);
             
-            if (isCollapsed) {
-                mainContent.style.marginLeft = '70px';
-                sidebar.style.width = '70px';
-            } else {
-                mainContent.style.marginLeft = '250px';
-                sidebar.style.width = '250px';
-            }
+            // Update toggle icon
+            toggleIcon.textContent = isCollapsed ? '▶' : '◀';
         }
 
         // Load Sidebar State
@@ -1112,9 +1312,11 @@
             if (isCollapsed) {
                 const sidebar = document.querySelector('.sidebar');
                 const mainContent = document.querySelector('.main-content');
+                const toggleIcon = document.getElementById('toggle-icon');
+                
                 sidebar.classList.add('collapsed');
-                sidebar.style.width = '70px';
-                mainContent.style.marginLeft = '70px';
+                mainContent.classList.add('sidebar-collapsed');
+                toggleIcon.textContent = '▶';
             }
             
             // Show hamburger on mobile
@@ -1247,6 +1449,367 @@ Ctrl+? or Cmd+?: Show this help
             }
         }
 
+        function toggleWeatherPanel() {
+            const dropdown = document.getElementById('weather-dropdown');
+            dropdown.classList.toggle('active');
+            if (dropdown.classList.contains('active')) {
+                loadWeatherData();
+            }
+        }
+
+        function toggleNewsPanel() {
+            const dropdown = document.getElementById('news-dropdown');
+            dropdown.classList.toggle('active');
+            if (dropdown.classList.contains('active')) {
+                loadNewsData();
+            }
+        }
+
+        // Auto-refresh news every hour (3600000 milliseconds)
+        let newsRefreshInterval;
+        
+        function startNewsAutoRefresh() {
+            // Initial load
+            if (document.getElementById('news-dropdown').classList.contains('active')) {
+                loadNewsData();
+            }
+            
+            // Set interval to refresh every hour
+            if (newsRefreshInterval) {
+                clearInterval(newsRefreshInterval);
+            }
+            
+            newsRefreshInterval = setInterval(() => {
+                console.log('Auto-refreshing news from Fiji Village...');
+                if (document.getElementById('news-dropdown').classList.contains('active')) {
+                    loadNewsData();
+                } else {
+                    // Silently refresh in background
+                    refreshNewsInBackground();
+                }
+            }, 3600000); // 1 hour = 3600000 ms
+        }
+
+        function refreshNewsInBackground() {
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://www.fijivillage.com/feed/'))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.items && data.items.length > 0) {
+                        // Store in sessionStorage for quick access
+                        sessionStorage.setItem('fijiNewsCache', JSON.stringify(data.items));
+                        console.log('News cache updated at ' + new Date().toLocaleTimeString());
+                    }
+                })
+                .catch(error => console.error('Background news refresh error:', error));
+        }
+
+        function loadNewsData() {
+            const content = document.getElementById('news-content');
+            content.innerHTML = '<div style="text-align: center; color: #6B7280; font-size: 14px; padding: 20px;">🔄 Loading news from Fiji Village...</div>';
+
+            // Check if we have cached news
+            const cachedNews = sessionStorage.getItem('fijiNewsCache');
+            const lastUpdate = localStorage.getItem('fijiNewsLastUpdate');
+            const now = new Date().getTime();
+            
+            // If cache exists and is less than 1 hour old, use it
+            if (cachedNews && lastUpdate && (now - parseInt(lastUpdate)) < 3600000) {
+                try {
+                    const articles = JSON.parse(cachedNews);
+                    displayFijiNews(articles);
+                    showLastUpdateTime();
+                    return;
+                } catch (e) {
+                    console.error('Cache parse error:', e);
+                }
+            }
+
+            // Fetch from Fiji Village RSS or news endpoint
+            fetchFijiVillageNews();
+        }
+
+        function showLastUpdateTime() {
+            const lastUpdate = localStorage.getItem('fijiNewsLastUpdate');
+            if (lastUpdate) {
+                const updateTime = new Date(parseInt(lastUpdate));
+                const timeAgo = getTimeAgo(updateTime);
+                const updateElement = document.querySelector('[data-update-time]');
+                if (updateElement) {
+                    updateElement.textContent = `Last updated: ${timeAgo}`;
+                }
+            }
+        }
+
+        function fetchFijiVillageNews() {
+            // Try multiple sources for Fiji Village news
+            const rssUrl = 'https://www.fijivillage.com/feed/';
+            
+            // Using a CORS proxy to fetch the RSS feed
+            fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.items && data.items.length > 0) {
+                        // Cache the news and update timestamp
+                        sessionStorage.setItem('fijiNewsCache', JSON.stringify(data.items));
+                        localStorage.setItem('fijiNewsLastUpdate', new Date().getTime().toString());
+                        console.log('News updated from Fiji Village at ' + new Date().toLocaleTimeString());
+                        displayFijiNews(data.items);
+                        showLastUpdateTime();
+                    } else {
+                        loadFijiSampleNews();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching Fiji Village news:', error);
+                    loadFijiSampleNews();
+                });
+        }
+
+        function displayFijiNews(articles) {
+            const lastUpdate = localStorage.getItem('fijiNewsLastUpdate');
+            const updateTime = lastUpdate ? getTimeAgo(new Date(parseInt(lastUpdate))) : 'just now';
+            
+            let html = `
+                <div style="padding: 12px 16px; background: linear-gradient(135deg, #06B6D4 0%, #0891b2 100%); color: white; margin: -16px -16px 12px -16px; border-radius: 12px 12px 0 0; font-size: 12px; font-weight: 600;">
+                    🏝️ Latest News from Fiji Village
+                    <div style="font-size: 10px; font-weight: 400; margin-top: 4px; opacity: 0.9;" data-update-time>🔄 Last updated: ${updateTime}</div>
+                </div>
+            `;
+
+            articles.slice(0, 5).forEach((article, index) => {
+                const pubDate = new Date(article.pubDate);
+                const timeAgo = getTimeAgo(pubDate);
+                const title = article.title || 'Untitled';
+                const description = article.description || article.content || 'Read more for details';
+                const link = article.link || 'https://www.fijivillage.com';
+                
+                // Clean HTML tags from description
+                const cleanDescription = description
+                    .replace(/<[^>]*>/g, '')
+                    .substring(0, 100) + '...';
+
+                html += `
+                    <div style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; ${index === 4 ? 'border-bottom: none;' : ''}">
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <span style="font-size: 11px; font-weight: 600; color: #06B6D4; background: #cffafe; padding: 2px 8px; border-radius: 12px;">🏝️ Fiji</span>
+                            <span style="font-size: 11px; color: #9CA3AF;">${timeAgo}</span>
+                        </div>
+                        <h4 style="margin: 0 0 4px 0; font-size: 13px; color: #0F172A; font-weight: 600; line-height: 1.3;">
+                            ${title}
+                        </h4>
+                        <p style="margin: 0 0 8px 0; font-size: 12px; color: #6B7280; line-height: 1.3;">
+                            ${cleanDescription}
+                        </p>
+                        <a href="${link}" target="_blank" style="font-size: 11px; color: #06B6D4; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            Read More →
+                        </a>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div style="padding: 12px; text-align: center; border-top: 1px solid #f3f4f6; background: #f9fafb; border-radius: 0 0 12px 12px; font-size: 11px; color: #9CA3AF; margin-top: 12px;">
+                    <a href="https://www.fijivillage.com/news/" target="_blank" style="color: #06B6D4; text-decoration: none;">📰 Fiji Village News</a> • Auto-refreshes hourly
+                </div>
+            `;
+
+            document.getElementById('news-content').innerHTML = html;
+        }
+
+        function loadFijiSampleNews() {
+            const fijiNews = [
+                {
+                    title: '🏝️ Fiji Tourism Recovery Exceeds Expectations',
+                    description: 'Tourism sector experiences record visitor numbers this month, boosting local economy and employment...',
+                    source: 'Fiji Village',
+                    timeAgo: '2 hours ago',
+                    url: 'https://www.fijivillage.com'
+                },
+                {
+                    title: '🌊 New Marine Conservation Initiative Launched',
+                    description: 'Government announces ambitious plan to protect coral reefs and marine ecosystems across the islands...',
+                    source: 'Fiji Village',
+                    timeAgo: '4 hours ago',
+                    url: 'https://www.fijivillage.com'
+                },
+                {
+                    title: '💼 Fiji Business Forum Attracts International Investors',
+                    description: 'Major business summit brings opportunities for local enterprises to expand into regional markets...',
+                    source: 'Fiji Village',
+                    timeAgo: '6 hours ago',
+                    url: 'https://www.fijivillage.com'
+                },
+                {
+                    title: '🎓 Educational Scholarships Announced for 2025',
+                    description: 'Government and private sector announce new scholarship programs for underprivileged students...',
+                    source: 'Fiji Village',
+                    timeAgo: '8 hours ago',
+                    url: 'https://www.fijivillage.com'
+                },
+                {
+                    title: '🏗️ Major Infrastructure Development Project Begins',
+                    description: 'New roads and utilities project to connect remote communities to major towns and services...',
+                    source: 'Fiji Village',
+                    timeAgo: '10 hours ago',
+                    url: 'https://www.fijivillage.com'
+                }
+            ];
+
+            let html = `
+                <div style="padding: 12px 16px; background: linear-gradient(135deg, #06B6D4 0%, #0891b2 100%); color: white; margin: -16px -16px 12px -16px; border-radius: 12px 12px 0 0; font-size: 12px; font-weight: 600;">
+                    🏝️ Latest News from Fiji Village
+                </div>
+            `;
+
+            fijiNews.forEach((article, index) => {
+                html += `
+                    <div style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; ${index === fijiNews.length - 1 ? 'border-bottom: none;' : ''}">
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center; flex-wrap: wrap;">
+                            <span style="font-size: 11px; font-weight: 600; color: #06B6D4; background: #cffafe; padding: 2px 8px; border-radius: 12px;">🏝️ Fiji</span>
+                            <span style="font-size: 11px; color: #9CA3AF;">${article.timeAgo}</span>
+                        </div>
+                        <h4 style="margin: 0 0 4px 0; font-size: 13px; color: #0F172A; font-weight: 600; line-height: 1.3;">
+                            ${article.title}
+                        </h4>
+                        <p style="margin: 0 0 8px 0; font-size: 12px; color: #6B7280; line-height: 1.3;">
+                            ${article.description}
+                        </p>
+                        <a href="${article.url}" target="_blank" style="font-size: 11px; color: #06B6D4; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            Read More →
+                        </a>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div style="padding: 12px; text-align: center; border-top: 1px solid #f3f4f6; background: #f9fafb; border-radius: 0 0 12px 12px; font-size: 11px; color: #9CA3AF; margin-top: 12px;">
+                    <a href="https://www.fijivillage.com/news/" target="_blank" style="color: #06B6D4; text-decoration: none;">📰 Visit Fiji Village News</a>
+                </div>
+            `;
+
+            document.getElementById('news-content').innerHTML = html;
+        }
+
+
+
+
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return `${diffMins} min ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        }
+
+
+        function loadWeatherData() {
+            const content = document.getElementById('weather-content');
+            content.innerHTML = '<div style="font-size: 14px; margin-bottom: 10px;">Loading weather data...</div>';
+
+            // Using Open-Meteo API (free, no API key needed)
+            // Get user's approximate location (will default to a location)
+            fetch('https://api.open-meteo.com/v1/forecast?latitude=35.6762&longitude=139.6503&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=celsius&timezone=auto', {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.current) {
+                    const current = data.current;
+                    const daily = data.daily;
+                    
+                    // Weather description mapping
+                    const weatherDesc = {
+                        0: '☀️ Clear',
+                        1: '🌤️ Partly Cloudy',
+                        2: '☁️ Cloudy',
+                        3: '☁️ Overcast',
+                        45: '🌫️ Foggy',
+                        48: '🌫️ Foggy',
+                        51: '🌧️ Light Drizzle',
+                        53: '🌧️ Moderate Drizzle',
+                        55: '🌧️ Heavy Drizzle',
+                        61: '🌧️ Slight Rain',
+                        63: '🌧️ Moderate Rain',
+                        65: '⛈️ Heavy Rain',
+                        71: '🌨️ Light Snow',
+                        73: '🌨️ Moderate Snow',
+                        75: '🌨️ Heavy Snow',
+                        77: '🌨️ Snow Grains',
+                        80: '🌧️ Slight Showers',
+                        81: '🌧️ Moderate Showers',
+                        82: '⛈️ Violent Showers',
+                        85: '🌨️ Light Snow Showers',
+                        86: '🌨️ Heavy Snow Showers',
+                        95: '⛈️ Thunderstorm',
+                        96: '⛈️ Thunderstorm with Hail',
+                        99: '⛈️ Thunderstorm with Heavy Hail'
+                    };
+                    
+                    const weather = weatherDesc[current.weather_code] || '🌡️ Unknown';
+                    
+                    let html = `
+                        <div style="padding: 16px; text-align: center;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">${weather}</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #0F172A; margin-bottom: 4px;">
+                                ${current.temperature_2m}°C
+                            </div>
+                            <div style="font-size: 13px; color: #6B7280; margin-bottom: 12px;">
+                                Humidity: ${current.relative_humidity_2m}%
+                            </div>
+                            <div style="font-size: 12px; color: #9CA3AF; margin-bottom: 16px;">
+                                Wind: ${current.wind_speed_10m} km/h
+                            </div>
+                            
+                            <div style="border-top: 1px solid #e5e7eb; padding-top: 12px; margin-top: 12px;">
+                                <div style="font-weight: 600; color: #0F172A; margin-bottom: 8px; font-size: 12px;">3-Day Forecast</div>
+                    `;
+                    
+                    // Add 3-day forecast
+                    for (let i = 0; i < 3; i++) {
+                        const date = new Date(daily.time[i]);
+                        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                        const maxTemp = daily.temperature_2m_max[i];
+                        const minTemp = daily.temperature_2m_min[i];
+                        const weatherCode = daily.weather_code[i];
+                        const weatherEmoji = weatherDesc[weatherCode] || '🌡️';
+                        
+                        html += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 12px;">
+                                <div style="text-align: left; flex: 1;">${dayName}</div>
+                                <div>${weatherEmoji}</div>
+                                <div style="text-align: right; min-width: 50px; color: #0F172A; font-weight: 600;">${maxTemp}°/${minTemp}°</div>
+                            </div>
+                        `;
+                    }
+                    
+                    html += `
+                            </div>
+                        </div>
+                        <div style="padding: 8px 16px; text-align: center; border-top: 1px solid #f3f4f6; background: #f9fafb; border-radius: 0 0 12px 12px; font-size: 11px; color: #9CA3AF;">
+                            Data from Open-Meteo API
+                        </div>
+                    `;
+                    
+                    content.innerHTML = html;
+                } else {
+                    content.innerHTML = '<div style="color: #DC2626; font-size: 12px;">Unable to load weather data</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Weather error:', error);
+                content.innerHTML = '<div style="color: #DC2626; font-size: 12px;">Weather service unavailable</div>';
+            });
+        }
+
+
         function loadNotifications() {
             const list = document.getElementById('notification-list');
             list.innerHTML = '<div style="text-align: center; padding: 20px; color: #6B7280;">Loading...</div>';
@@ -1370,14 +1933,28 @@ Ctrl+? or Cmd+?: Show this help
         document.addEventListener('click', function(event) {
             const bell = document.getElementById('notification-bell');
             const dropdown = document.getElementById('notification-dropdown');
+            const weatherBell = document.getElementById('weather-bell');
+            const weatherDropdown = document.getElementById('weather-dropdown');
+            const newsBell = document.getElementById('news-bell');
+            const newsDropdown = document.getElementById('news-dropdown');
+            
             if (!bell.contains(event.target) && !dropdown.contains(event.target)) {
                 dropdown.classList.remove('active');
+            }
+            
+            if (!weatherBell.contains(event.target) && !weatherDropdown.contains(event.target)) {
+                weatherDropdown.classList.remove('active');
+            }
+            
+            if (!newsBell.contains(event.target) && !newsDropdown.contains(event.target)) {
+                newsDropdown.classList.remove('active');
             }
         });
 
         // Load notifications on page load
         window.addEventListener('load', function() {
             loadNotifications();
+            startNewsAutoRefresh();
         });
     </script>
 
