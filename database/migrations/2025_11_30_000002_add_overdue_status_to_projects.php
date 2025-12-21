@@ -26,7 +26,7 @@ return new class extends Migration
                 $table->id();
                 $table->string('name');
                 $table->text('description')->nullable();
-                $table->enum('status', ['planning', 'in-progress', 'completed', 'on-hold', 'cancelled', 'overdue'])->default('planning');
+                $table->enum('status', ['planning', 'in-progress', 'completed', 'on-hold', 'cancelled', 'overdue', 'testing', 'awaiting-input', 'not-started', 'archived'])->default('planning');
                 $table->date('start_date')->nullable();
                 $table->date('due_date')->nullable();
                 $table->integer('progress')->default(0);
@@ -60,7 +60,7 @@ return new class extends Migration
             }
         } else {
             // For other databases like MySQL, use ALTER TABLE
-            DB::statement("ALTER TABLE projects MODIFY COLUMN status ENUM('planning', 'in-progress', 'completed', 'on-hold', 'cancelled', 'overdue') DEFAULT 'planning'");
+            DB::statement("ALTER TABLE projects MODIFY COLUMN status ENUM('planning', 'in-progress', 'completed', 'on-hold', 'cancelled', 'overdue', 'testing', 'awaiting-input', 'not-started', 'archived') DEFAULT 'planning'");
         }
     }
 
@@ -81,7 +81,7 @@ return new class extends Migration
                 $table->id();
                 $table->string('name');
                 $table->text('description')->nullable();
-                $table->enum('status', ['planning', 'in-progress', 'completed', 'on-hold', 'cancelled'])->default('planning');
+                $table->enum('status', ['planning', 'in-progress', 'completed', 'on-hold', 'cancelled', 'overdue', 'testing', 'awaiting-input', 'not-started', 'archived'])->default('planning');
                 $table->date('start_date')->nullable();
                 $table->date('due_date')->nullable();
                 $table->integer('progress')->default(0);
@@ -94,12 +94,10 @@ return new class extends Migration
                 $table->timestamps();
             });
             
-            // Reinsert all the data excluding overdue projects
+            // Reinsert all the data
             foreach ($projects as $project) {
                 $projectArray = (array) $project;
-                if ($projectArray['status'] !== 'overdue') {
-                    DB::table('projects')->insert($projectArray);
-                }
+                DB::table('projects')->insert($projectArray);
             }
         } else {
             DB::statement("ALTER TABLE projects MODIFY COLUMN status ENUM('planning', 'in-progress', 'completed', 'on-hold', 'cancelled') DEFAULT 'planning'");

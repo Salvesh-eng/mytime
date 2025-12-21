@@ -11,6 +11,7 @@ use App\Models\IncomeSource;
 use App\Models\MonthlyIncomeBudget;
 use App\Models\MonthlyExpenseBudget;
 use App\Models\ExpenseTracking;
+use App\Models\PersonalAccount;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -244,6 +245,7 @@ class FinancialController extends Controller
             ->where('amount', '>', 0)
             ->whereIn('status', ['pending', 'approved', 'completed'])
             ->latest('transaction_date')
+            ->select('id', 'transaction_date', 'amount', 'status', 'description', 'category', 'account', 'notes')
             ->get();
         
         return view('admin.financial.income', [
@@ -310,7 +312,7 @@ class FinancialController extends Controller
     {
         $validated = $request->validate([
             'invoice_number' => 'required|string|unique:financial_transactions',
-            'category' => 'required|in:salary,equipment,software,travel,utilities,marketing,client_payment,other',
+            'category' => 'required|in:salary,equipment,software,travel,utilities,marketing,client_payment,savings,other',
             'description' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0.01',
             'currency' => 'required|string|size:3',
@@ -428,25 +430,53 @@ class FinancialController extends Controller
      */
     public function storeTransaction(Request $request)
     {
-        $validated = $request->validate([
-            'type' => 'required|in:income,expense',
-            'category' => 'required|in:salary,equipment,software,travel,utilities,marketing,client_payment,other',
-            'description' => 'required|string|max:255',
-            'amount' => 'required|numeric|min:0.01',
-            'currency' => 'required|string|size:3',
-            'account' => 'required|in:cash,anz_expense,anz_savings',
-            'transaction_date' => 'required|date',
-            'project_id' => 'nullable|exists:projects,id',
-            'notes' => 'nullable|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'type' => 'required|in:income,expense',
+                'category' => 'required|string',
+                'description' => 'required|string|max:255',
+                'amount' => 'required|numeric|min:0.01',
+                'currency' => 'required|string|size:3',
+                'account' => 'required|string',
+                'transaction_date' => 'required|date',
+                'project_id' => 'nullable|exists:projects,id',
+                'notes' => 'nullable|string',
+            ]);
 
-        $validated['created_by'] = Auth::id();
-        $validated['status'] = 'pending';
+            $validated['created_by'] = Auth::id();
+            $validated['status'] = 'completed';
 
-        FinancialTransaction::create($validated);
+            $transaction = FinancialTransaction::create($validated);
 
-        return redirect()->route('admin.financial.transactions')
-            ->with('success', 'Transaction created successfully!');
+            // Return JSON for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'id' => $transaction->id,
+                    'message' => 'Transaction created successfully!'
+                ], 200);
+            }
+
+            return redirect()->route('admin.financial.transactions')
+                ->with('success', 'Transaction created successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -1575,5 +1605,145 @@ class FinancialController extends Controller
             ->first();
 
         return $biggest ? ucfirst(str_replace('_', ' ', $biggest->category)) : 'N/A';
+    }
+
+    /**
+     * Create a new income account via API.
+     */
+    public function createAccount(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'account_name' => 'required|string|max:255',
+                'account_type' => 'required|string|in:cash,bank_savings,bank_expense,digital_wallet,investment,other',
+                'initial_balance' => 'required|numeric|min:0',
+            ]);
+
+            $account = PersonalAccount::create([
+                'user_id' => Auth::id(),
+                'account_name' => $validated['account_name'],
+                'account_type' => $validated['account_type'],
+                'balance' => $validated['initial_balance'],
+                'account_number' => 'ACC-' . strtoupper(uniqid()),
+                'currency' => 'USD',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $account->id,
+                    'name' => $account->account_name,
+                    'type' => $account->account_type,
+                    'balance' => $account->balance,
+                    'created_at' => $account->created_at->toDateString(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all income accounts for the user via API.
+     */
+    public function getAccounts()
+    {
+        try {
+            $accounts = PersonalAccount::where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($account) {
+                    return [
+                        'id' => $account->id,
+                        'name' => $account->account_name,
+                        'type' => $account->account_type,
+                        'balance' => $account->balance,
+                        'created_at' => $account->created_at->toDateString(),
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $accounts
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update an income account via API.
+     */
+    public function updateAccount(Request $request, $id)
+    {
+        try {
+            $account = PersonalAccount::where('id', $id)
+                ->where('user_id', Auth::id())
+                ->firstOrFail();
+
+            $validated = $request->validate([
+                'account_name' => 'nullable|string|max:255',
+                'account_type' => 'nullable|string|in:cash,bank_savings,bank_expense,digital_wallet,investment,other',
+                'balance' => 'nullable|numeric|min:0',
+            ]);
+
+            if (isset($validated['account_name'])) {
+                $account->account_name = $validated['account_name'];
+            }
+            if (isset($validated['account_type'])) {
+                $account->account_type = $validated['account_type'];
+            }
+            if (isset($validated['balance'])) {
+                $account->balance = $validated['balance'];
+            }
+
+            $account->save();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $account->id,
+                    'name' => $account->account_name,
+                    'type' => $account->account_type,
+                    'balance' => $account->balance,
+                    'created_at' => $account->created_at->toDateString(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete an income account via API.
+     */
+    public function deleteAccount($id)
+    {
+        try {
+            $account = PersonalAccount::where('id', $id)
+                ->where('user_id', Auth::id())
+                ->firstOrFail();
+
+            $account->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Account deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

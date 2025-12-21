@@ -290,16 +290,190 @@
         .dashboard-grid.three-col {
             grid-template-columns: repeat(2, 1fr);
         }
+        
+        .budget-cards-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .dashboard-grid,
+        .dashboard-grid.three-col {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .budget-cards-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .financial-dashboard {
+            padding: 15px;
+        }
+        
+        .dashboard-title {
+            font-size: 24px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
     }
 
     @media (max-width: 768px) {
         .dashboard-grid,
         .dashboard-grid.three-col {
             grid-template-columns: 1fr;
+            gap: 15px;
         }
 
         .budget-cards-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .financial-dashboard {
+            padding: 12px;
+        }
+        
+        .dashboard-title {
+            font-size: 20px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .budget-summary {
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .budget-summary-title {
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .budget-card {
+            padding: 15px;
+        }
+        
+        .budget-card-label {
+            font-size: 11px;
+        }
+        
+        .budget-card-value {
+            font-size: 20px;
+        }
+        
+        .card {
+            padding: 15px;
+        }
+        
+        .card-title {
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        
+        .chart-container {
+            height: 200px;
+        }
+        
+        .data-table {
+            font-size: 11px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 8px;
+        }
+        
+        .savings-table th,
+        .savings-table td {
+            padding: 10px;
+            font-size: 11px;
+        }
+        
+        .savings-summary-title {
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dashboard-grid,
+        .dashboard-grid.three-col {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .budget-cards-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .financial-dashboard {
+            padding: 10px;
+        }
+        
+        .dashboard-title {
+            font-size: 18px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .budget-summary {
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .budget-card {
+            padding: 12px;
+        }
+        
+        .budget-card-label {
+            font-size: 10px;
+        }
+        
+        .budget-card-value {
+            font-size: 18px;
+        }
+        
+        .budget-card-button {
+            padding: 8px 12px;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+        
+        .card {
+            padding: 12px;
+        }
+        
+        .card-title {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .chart-container {
+            height: 180px;
+        }
+        
+        .pie-chart-container {
+            height: 150px;
+        }
+        
+        .data-table {
+            font-size: 10px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 6px;
+        }
+        
+        .savings-table {
+            font-size: 10px;
+        }
+        
+        .savings-table th,
+        .savings-table td {
+            padding: 8px;
         }
     }
 

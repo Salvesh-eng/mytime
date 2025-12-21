@@ -260,13 +260,208 @@
         height: 300px;
     }
 
+    @media (max-width: 1200px) {
+        .form-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .summary-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .page-header {
+            padding: 20px;
+        }
+        
+        .page-header h1 {
+            font-size: 26px;
+        }
+        
+        .form-section {
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-cards {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+    }
+
     @media (max-width: 768px) {
         .form-row {
             grid-template-columns: 1fr;
         }
 
         .page-header h1 {
-            font-size: 24px;
+            font-size: 22px;
+        }
+        
+        .page-header {
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .page-header p {
+            font-size: 13px;
+        }
+        
+        .back-button {
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .form-section {
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .summary-cards {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .summary-card {
+            padding: 12px;
+        }
+        
+        .summary-card-label {
+            font-size: 10px;
+        }
+        
+        .summary-card-value {
+            font-size: 20px;
+        }
+        
+        .donations-table {
+            font-size: 11px;
+        }
+        
+        .donations-table th,
+        .donations-table td {
+            padding: 10px;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header h1 {
+            font-size: 18px;
+        }
+        
+        .page-header {
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .page-header p {
+            font-size: 12px;
+        }
+        
+        .back-button {
+            padding: 8px 12px;
+            font-size: 11px;
+            margin-bottom: 12px;
+        }
+        
+        .form-section {
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        .btn {
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+        
+        .summary-cards {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .summary-card {
+            padding: 10px;
+        }
+        
+        .summary-card-label {
+            font-size: 9px;
+        }
+        
+        .summary-card-value {
+            font-size: 18px;
+        }
+        
+        .donations-table {
+            font-size: 10px;
+        }
+        
+        .donations-table th,
+        .donations-table td {
+            padding: 8px;
+        }
+        
+        .donations-table .action-btn {
+            padding: 4px 8px;
+            font-size: 10px;
+            margin-right: 2px;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+            padding: 10px 12px;
+        }
+        
+        .chart-canvas {
+            height: 200px;
         }
     }
 </style>

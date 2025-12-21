@@ -1,342 +1,398 @@
-# 🚀 PROJECT MANAGEMENT ENHANCEMENTS - QUICK REFERENCE
+# Oracle Cloud Deployment - Quick Reference
 
-## All 8 Changes Implemented ✅
+## Essential Commands
 
-### 📊 Change 19: Progress Tracking
-```
-Feature: Visual progress bars showing hours completed vs estimated
-Display: Color-coded bars on project cards
-Calculation: actual_hours / estimated_hours * 100
-Colors: Red (0-25%) → Orange (25-50%) → Blue (50-75%) → Green (75-100%)
+### SSH Connection
+```bash
+ssh -i oracle-key.key ubuntu@YOUR_PUBLIC_IP
 ```
 
-### 🏷️ Change 20: Tags/Categories
-```
-Categories: Development, Marketing, Design, Infrastructure, Testing, Documentation, Other
-Colors: Each category has unique color code
-Features: Multiple tags per project, filter by category
-Route: /admin/projects/filter/{category}
+### System Updates
+```bash
+sudo apt update && sudo apt upgrade -y
 ```
 
-### 💰 Change 21: Budget Tracking
-```
-Fields: Allocated Budget, Spent Amount, Currency, Notes
-Status: Healthy (<50%) → Moderate (50-80%) → Warning (80-100%) → Exceeded (>100%)
-Calculation: spent_amount / allocated_budget * 100
-Display: Progress bar similar to time tracking
-```
-
-### 📈 Change 22: Project Dashboard
-```
-URL: /admin/projects/{project}
-Displays:
-  - Project statistics (progress, team, milestones, budget)
-  - Client information with contact details
-  - Upcoming milestones timeline
-  - Recent time entries log
-  - Action buttons (Edit, Archive, Delete)
+### Application Deployment
+```bash
+cd /var/www/laravel-app
+git pull origin main
+composer install --no-dev --optimize-autoloader
+npm install && npm run build
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 ```
 
-### 📋 Change 23: Project Templates
-```
-URL: /admin/projects/templates
-Features:
-  - Save any project as template
-  - Quick creation from template
-  - Pre-configured team members
-  - Usage counter per template
-  - Activate/deactivate templates
+### Service Management
+```bash
+# Nginx
+sudo systemctl start nginx
+sudo systemctl stop nginx
+sudo systemctl restart nginx
+sudo systemctl status nginx
+
+# PHP-FPM
+sudo systemctl start php8.2-fpm
+sudo systemctl stop php8.2-fpm
+sudo systemctl restart php8.2-fpm
+sudo systemctl status php8.2-fpm
 ```
 
-### 📦 Change 24: Archive System
-```
-URLs: 
-  - /admin/projects (active)
-  - /admin/projects/archived (archived)
-Features:
-  - Archive instead of delete (soft delete)
-  - Restore archived projects
-  - Permanent deletion (only if archived)
-  - Archive timestamp tracking
+### Permissions
+```bash
+sudo chown -R www-data:www-data /var/www/laravel-app/storage
+sudo chown -R www-data:www-data /var/www/laravel-app/bootstrap/cache
+sudo chmod -R 775 /var/www/laravel-app/storage
+sudo chmod -R 775 /var/www/laravel-app/bootstrap/cache
 ```
 
-### 🎯 Change 25: Milestones
-```
-Fields: Title, Description, Target Date, Status, Completion %, Deliverables
-Status: pending, in-progress, completed, overdue
-Display: On project dashboard with timeline
-Features: Auto-update status, overdue detection, days remaining
-```
+### Logs
+```bash
+# Laravel logs
+tail -f /var/www/laravel-app/storage/logs/laravel.log
 
-### 👤 Change 26: Client Assignment
-```
-Contact Info: Name, Contact Person, Email, Phone, Company
-Address: Street, City, State, Postal Code, Country
-Billing: Email, Address, Tax ID, Notes
-Display: On project dashboard
-Features: One client per project, full CRUD operations
+# Nginx error logs
+sudo tail -f /var/log/nginx/error.log
+
+# Nginx access logs
+sudo tail -f /var/log/nginx/access.log
+
+# PHP-FPM logs
+sudo tail -f /var/log/php8.2-fpm.log
 ```
 
----
+### Database
+```bash
+# Connect to database
+mysql -h YOUR_DB_HOST -u admin -p
 
-## Database Structure
-
-### New Tables (5)
-| Table | Purpose |
-|-------|---------|
-| project_tags | Project categories/tags |
-| project_budgets | Budget allocation & tracking |
-| project_milestones | Project phases & milestones |
-| project_clients | Client information |
-| project_templates | Reusable project templates |
-
-### Modified Tables (1)
-| Table | New Columns |
-|-------|------------|
-| projects | is_archived, archived_at, estimated_hours, actual_hours, slug |
-
----
-
-## Key Routes
-
-### Project Management
-```
-GET    /admin/projects                     - List active projects
-GET    /admin/projects/{project}           - Project dashboard
-POST   /admin/projects                     - Create project
-PUT    /admin/projects/{project}           - Update project
-DELETE /admin/projects/{project}           - Delete (archived only)
+# Test connection
+mysql -h YOUR_DB_HOST -u admin -p -e "SELECT 1;"
 ```
 
-### Archive Management
-```
-GET    /admin/projects/archived            - List archived projects
-POST   /admin/projects/{project}/archive   - Archive project
-POST   /admin/projects/{project}/restore   - Restore project
-```
-
-### Templates
-```
-GET    /admin/projects/templates           - Template library
-POST   /admin/projects/{project}/save-template - Save as template
-```
-
-### Sub-Resources
-```
-POST   /admin/projects/{project}/tags      - Update tags
-POST   /admin/projects/{project}/budget    - Update budget
-POST   /admin/projects/{project}/milestone - Add/update milestone
-POST   /admin/projects/{project}/client    - Update client info
+### Cache Clearing
+```bash
+cd /var/www/laravel-app
+php artisan config:clear
+php artisan cache:clear
+php artisan view:clear
+php artisan route:clear
 ```
 
 ---
 
-## Model Relationships
+## Important Files & Locations
 
-```
-Project
-  ├── hasMany(ProjectTag)
-  ├── hasOne(ProjectBudget)
-  ├── hasMany(ProjectMilestone)
-  ├── hasOne(ProjectClient)
-  ├── belongsToMany(TeamMember)
-  ├── hasMany(Notification)
-  └── hasMany(TimeEntry)
+| Item | Location |
+|------|----------|
+| Application | `/var/www/laravel-app` |
+| .env file | `/var/www/laravel-app/.env` |
+| Nginx config | `/etc/nginx/sites-available/laravel-app` |
+| Nginx logs | `/var/log/nginx/` |
+| Laravel logs | `/var/www/laravel-app/storage/logs/` |
+| PHP-FPM config | `/etc/php/8.2/fpm/php.ini` |
+| SSH key | `oracle-key.key` (on your local machine) |
 
-ProjectTag
-  └── belongsTo(Project)
+---
 
-ProjectBudget
-  └── belongsTo(Project)
+## Environment Variables (.env)
 
-ProjectMilestone
-  └── belongsTo(Project)
+```env
+APP_NAME=MyTime
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=http://YOUR_PUBLIC_IP
 
-ProjectClient
-  └── belongsTo(Project)
+DB_CONNECTION=mysql
+DB_HOST=YOUR_DATABASE_HOSTNAME
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=admin
+DB_PASSWORD=YOUR_DATABASE_PASSWORD
 
-ProjectTemplate
-  └── belongsTo(User, 'created_by')
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
 ```
 
 ---
 
-## Useful Model Methods
+## Firewall Rules
 
-### Project Model
-```php
-$project->progress_percentage      // Calculated from hours
-$project->total_time_spent         // Sum of time entries
-$project->remaining_budget         // allocated - spent
-$project->budget_percentage        // (spent / allocated) * 100
-$project->archive()                // Archive project
-$project->restore()                // Restore from archive
-$project->upcoming_milestones      // Next 3 non-completed
-```
+```bash
+# Allow SSH
+sudo ufw allow 22/tcp
 
-### ProjectBudget Model
-```php
-$budget->remaining_budget          // allocated - spent
-$budget->budget_utilization_percentage
-$budget->isBudgetExceeded()
-$budget->budget_status             // healthy/moderate/warning/exceeded
-```
+# Allow HTTP
+sudo ufw allow 80/tcp
 
-### ProjectMilestone Model
-```php
-$milestone->is_overdue             // Past due date?
-$milestone->days_remaining         // Days until target
-$milestone->progress_color         // Color for status
-$milestone->updateStatus()         // Auto-update based on dates
+# Allow HTTPS
+sudo ufw allow 443/tcp
+
+# Enable firewall
+sudo ufw enable
+
+# Check status
+sudo ufw status
 ```
 
 ---
 
-## Quick Setup Checklist
+## Database Connection Test
 
-- [ ] Run migrations: `php artisan migrate`
-- [ ] Clear cache: `php artisan cache:clear`
-- [ ] Test project creation
-- [ ] Add tags to a project
-- [ ] Set project budget
-- [ ] Create milestones
-- [ ] Assign client
-- [ ] Save project as template
-- [ ] Test archive/restore
-- [ ] Verify dashboard displays correctly
+```bash
+# From your instance
+mysql -h YOUR_DB_HOST -u admin -p
 
----
-
-## File Locations
-
-### Models
-- `app/Models/Project.php` (updated)
-- `app/Models/ProjectTag.php` (new)
-- `app/Models/ProjectBudget.php` (new)
-- `app/Models/ProjectMilestone.php` (new)
-- `app/Models/ProjectClient.php` (new)
-- `app/Models/ProjectTemplate.php` (new)
-
-### Controllers
-- `app/Http/Controllers/Admin/ProjectController.php` (new)
-
-### Migrations
-- `database/migrations/2024_01_01_000008_*` (new)
-- `database/migrations/2024_01_01_000009_*` (new)
-- `database/migrations/2024_01_01_000010_*` (new)
-- `database/migrations/2024_01_01_000011_*` (new)
-- `database/migrations/2024_01_01_000012_*` (new)
-- `database/migrations/2024_01_01_000013_*` (new)
-
-### Views
-- `resources/views/admin/projects/index.blade.php` (updated)
-- `resources/views/admin/projects/show.blade.php` (new - dashboard)
-- `resources/views/admin/projects/archived.blade.php` (new)
-- `resources/views/admin/projects/templates.blade.php` (new)
-
-### Routes
-- `routes/web.php` (updated)
-
-### Documentation
-- `PROJECT_ENHANCEMENTS_GUIDE.md` (detailed guide)
-- `IMPLEMENTATION_COMPLETE.md` (summary)
-- `MIGRATION_GUIDE.php` (migration reference)
-- `QUICK_REFERENCE.md` (this file)
-
----
-
-## Usage Examples
-
-### Create Complete Project
-```php
-// Create project
-$project = Project::create([
-    'name' => 'Mobile App',
-    'status' => 'in-progress',
-    'start_date' => now(),
-    'due_date' => now()->addMonths(3),
-    'estimated_hours' => 500,
-]);
-
-// Add tag
-$project->tags()->create(['category' => 'Development']);
-
-// Set budget
-$project->budget()->create(['allocated_budget' => 50000]);
-
-// Add milestone
-$project->milestones()->create([
-    'title' => 'MVP',
-    'target_date' => now()->addMonth(),
-]);
-
-// Assign client
-$project->client()->create([
-    'client_name' => 'Tech Corp',
-    'contact_person' => 'John Doe',
-]);
-
-// Assign team
-$project->teamMembers()->attach([1, 2, 3]);
-
-// Save as template
-ProjectTemplate::create([
-    'name' => 'Mobile App Template',
-    'created_by' => auth()->id(),
-    'team_members' => [1, 2, 3],
-]);
-```
-
-### Archive & Restore
-```php
-$project->archive();           // Archive
-$project->restore();           // Restore
-$project->delete();            // Permanent (only if archived)
-```
-
-### Query Examples
-```php
-// Get active projects
-Project::where('is_archived', false)->get();
-
-// Get by category
-Project::whereHas('tags', function ($q) {
-    $q->where('category', 'Development');
-})->get();
-
-// Get projects by budget status
-Project::with('budget')->get()
-    ->filter(fn($p) => $p->budget_status === 'warning');
-
-// Get projects with upcoming milestones
-Project::with('milestones')
-    ->whereHas('milestones', function ($q) {
-        $q->where('status', '!=', 'completed');
-        $q->where('target_date', '>=', now());
-    })->get();
+# In MySQL prompt
+SHOW DATABASES;
+USE laravel;
+SHOW TABLES;
+SELECT COUNT(*) FROM users;
+EXIT;
 ```
 
 ---
 
-## Performance Tips
+## Nginx Configuration Test
 
-- Use eager loading: `Project::with('tags', 'budget', 'milestones')`
-- Cache progress calculations for dashboard
-- Index foreign key columns in database
-- Paginate large project lists (15-20 per page)
-- Use select() to limit columns when not needed
+```bash
+# Test syntax
+sudo nginx -t
 
----
+# Reload configuration
+sudo nginx -s reload
 
-## Support
-
-For detailed information, see:
-- `PROJECT_ENHANCEMENTS_GUIDE.md` - Complete feature documentation
-- `MIGRATION_GUIDE.php` - Migration details and troubleshooting
-- `IMPLEMENTATION_COMPLETE.md` - Full implementation summary
+# Restart service
+sudo systemctl restart nginx
+```
 
 ---
 
-**Last Updated**: November 21, 2025
-**Status**: ✅ Production Ready
+## PHP-FPM Socket Check
 
+```bash
+# Verify socket exists
+ls -la /var/run/php/php8.2-fpm.sock
+
+# Should show something like:
+# srw-rw---- 1 www-data www-data 0 Dec 10 12:34 /var/run/php/php8.2-fpm.sock
+```
+
+---
+
+## Disk Space Check
+
+```bash
+# Check disk usage
+df -h
+
+# Check directory size
+du -sh /var/www/laravel-app
+du -sh /var/www/laravel-app/storage
+```
+
+---
+
+## Memory & CPU Check
+
+```bash
+# Check memory
+free -h
+
+# Check CPU
+top
+
+# Check processes
+ps aux | grep php
+ps aux | grep nginx
+```
+
+---
+
+## Git Operations
+
+```bash
+# Clone repository
+git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
+
+# Pull latest changes
+git pull origin main
+
+# Check status
+git status
+
+# View logs
+git log --oneline -10
+```
+
+---
+
+## Laravel Artisan Commands
+
+```bash
+# Generate app key
+php artisan key:generate
+
+# Run migrations
+php artisan migrate
+
+# Run migrations with force (production)
+php artisan migrate --force
+
+# Seed database
+php artisan db:seed
+
+# Clear all caches
+php artisan cache:clear
+
+# Cache configuration
+php artisan config:cache
+
+# Cache routes
+php artisan route:cache
+
+# Cache views
+php artisan view:cache
+
+# List routes
+php artisan route:list
+
+# Tinker (interactive shell)
+php artisan tinker
+```
+
+---
+
+## SSL Certificate Management
+
+```bash
+# Get certificate
+sudo certbot certonly --nginx -d YOUR_DOMAIN
+
+# List certificates
+sudo certbot certificates
+
+# Renew certificate
+sudo certbot renew
+
+# Test renewal
+sudo certbot renew --dry-run
+
+# Auto-renewal status
+sudo systemctl status certbot.timer
+```
+
+---
+
+## Deployment Script
+
+```bash
+#!/bin/bash
+cd /var/www/laravel-app
+git pull origin main
+composer install --no-dev --optimize-autoloader
+npm install && npm run build
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+sudo systemctl restart php8.2-fpm
+sudo systemctl restart nginx
+```
+
+---
+
+## Monitoring Commands
+
+```bash
+# Real-time system monitoring
+top
+
+# Disk usage
+df -h
+
+# Memory usage
+free -h
+
+# Network connections
+netstat -tuln
+
+# Open ports
+sudo lsof -i -P -n
+
+# Process list
+ps aux
+
+# System uptime
+uptime
+
+# System load
+cat /proc/loadavg
+```
+
+---
+
+## Backup Commands
+
+```bash
+# Backup application
+tar -czf laravel-app-backup.tar.gz /var/www/laravel-app
+
+# Backup database
+mysqldump -h YOUR_DB_HOST -u admin -p laravel > laravel-backup.sql
+
+# Restore database
+mysql -h YOUR_DB_HOST -u admin -p laravel < laravel-backup.sql
+```
+
+---
+
+## Useful Links
+
+- **Oracle Cloud Console:** https://www.oracle.com/cloud/
+- **Oracle Cloud Docs:** https://docs.oracle.com/en-us/iaas/
+- **Laravel Docs:** https://laravel.com/docs
+- **Nginx Docs:** https://nginx.org/en/docs/
+- **MySQL Docs:** https://dev.mysql.com/doc/
+- **PHP Docs:** https://www.php.net/docs.php
+
+---
+
+## Troubleshooting Quick Links
+
+- **Can't SSH?** → Check security list, key permissions
+- **502 Bad Gateway?** → Restart PHP-FPM
+- **Database error?** → Check DB_HOST, credentials, VCN
+- **Blank page?** → Check Laravel logs, enable debug
+- **Slow app?** → Clear cache, check resources
+- **File upload fails?** → Check storage permissions
+
+---
+
+## Cost Verification
+
+```bash
+# Check what's running
+sudo systemctl list-units --type=service --state=running
+
+# Verify free tier resources
+# - 1 ARM compute instance (free)
+# - 1 MySQL database 20GB (free)
+# - 10GB storage (free)
+```
+
+**Expected monthly cost: $0** ✅
+
+---
+
+## Emergency Contacts
+
+- **Oracle Support:** https://support.oracle.com/
+- **Laravel Community:** https://laravel.com/community
+- **Stack Overflow:** https://stackoverflow.com/questions/tagged/laravel
+
+---
+
+**Save this file for quick reference during deployment!** 📌

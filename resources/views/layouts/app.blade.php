@@ -1030,17 +1030,19 @@
         .toast-notification {
             position: fixed;
             top: 20px;
-            right: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             padding: 16px 24px;
             border-radius: 8px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            z-index: 9999;
-            animation: slideIn 0.3s ease-out, slideOut 0.3s ease-out 4.7s forwards;
+            z-index: 99999;
+            animation: slideInTop 0.3s ease-out, slideOutTop 0.3s ease-out 4.7s forwards;
             font-weight: 500;
             display: flex;
             align-items: center;
             gap: 12px;
             max-width: 400px;
+            pointer-events: auto;
         }
 
         .toast-success {
@@ -1086,6 +1088,28 @@
                 opacity: 0;
             }
         }
+
+        @keyframes slideInTop {
+            from {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutTop {
+            from {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+        }
     </style>
     @yield('styles')
 </head>
@@ -1105,9 +1129,8 @@
                         <li><a href="/admin/dashboard" class="@if(request()->is('admin/dashboard')) active @endif" data-label="Dashboard"><span>📊</span> <span class="nav-label">Dashboard</span></a></li>
                         <li><a href="/admin/projects" class="@if(request()->is('admin/projects')) active @endif" data-label="Projects"><span>📁</span> <span class="nav-label">Projects</span></a></li>
                         <li><a href="/admin/projects/create" class="@if(request()->is('admin/projects/create')) active @endif" data-label="New Project"><span>✨</span> <span class="nav-label">New Project</span></a></li>
-                        <li><a href="/admin/financial" class="@if(request()->is('admin/financial*')) active @endif" data-label="Financial"><span>����</span> <span class="nav-label">Financial</span></a></li>
+                        <li><a href="/admin/financial" class="@if(request()->is('admin/financial*')) active @endif" data-label="Financial"><span>💰</span> <span class="nav-label">Financial</span></a></li>
                         <li><a href="/admin/analytics" class="@if(request()->is('admin/analytics')) active @endif" data-label="Analytics"><span>📈</span> <span class="nav-label">Analytics</span></a></li>
-                        <li><a href="/admin/notifications" class="@if(request()->is('admin/notifications')) active @endif" data-label="Notifications"><span>🔔</span> <span class="nav-label">Notifications</span></a></li>
                         <li><a href="/admin/team-members" class="@if(request()->is('admin/team-members*')) active @endif" data-label="Team"><span>👥</span> <span class="nav-label">Team</span></a></li>
                         <li><a href="/admin/users" class="@if(request()->is('admin/users*')) active @endif" data-label="Users"><span>👤</span> <span class="nav-label">Users</span></a></li>
                         <li><a href="/admin/time-entries" class="@if(request()->is('admin/time-entries*')) active @endif" data-label="Time Logs"><span>⏱️</span> <span class="nav-label">Time Logs</span></a></li>
@@ -1235,18 +1258,10 @@
             @endif
 
             @if(session('success'))
-                <div class="toast-notification toast-success" id="toast-notification">
+                <div class="toast-notification toast-success" id="toast-success">
                     <span>✓</span>
                     <span>{{ session('success') }}</span>
-                    <button class="toast-close" onclick="document.getElementById('toast-notification').remove()">×</button>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="toast-notification toast-error" id="toast-notification">
-                    <span>✕</span>
-                    <span>{{ session('error') }}</span>
-                    <button class="toast-close" onclick="document.getElementById('toast-notification').remove()">×</button>
+                    <button class="toast-close" onclick="document.getElementById('toast-success').remove()">×</button>
                 </div>
             @endif
 

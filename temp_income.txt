@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('page-title', 'Income Management')
 
@@ -160,22 +160,22 @@
 
     .summary-card {
         background: linear-gradient(135deg, #B3D9FF 0%, #B3FFB3 100%);
-        padding: 10px;
-        border-radius: 6px;
+        padding: 15px;
+        border-radius: 8px;
         text-align: center;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     .summary-card-label {
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 600;
         color: #666;
         text-transform: uppercase;
-        margin-bottom: 4px;
+        margin-bottom: 8px;
     }
 
     .summary-card-value {
-        font-size: 18px;
+        font-size: 24px;
         font-weight: 700;
         color: #333;
     }
@@ -184,17 +184,11 @@
         position: fixed;
         top: 20px;
         right: 20px;
-        z-index: 999999 !important;
+        z-index: 9999;
         display: flex;
         flex-direction: column;
         gap: 10px;
-        width: auto;
         max-width: 350px;
-        pointer-events: none;
-        overflow: visible;
-        margin: 0;
-        padding: 0;
-        isolation: isolate;
     }
 
     .toast {
@@ -205,9 +199,7 @@
         align-items: center;
         gap: 12px;
         animation: slideInRight 0.4s ease-out;
-        width: 280px;
-        pointer-events: auto;
-        flex-shrink: 0;
+        min-width: 280px;
     }
 
     @keyframes slideInRight {
@@ -410,6 +402,12 @@
         background: #ffb3d9;
     }
 
+    .card-table {
+        display: grid;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
     .card-row {
         background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
         border: 2px solid #e8e8e8;
@@ -469,6 +467,18 @@
         display: flex;
         align-items: center;
         gap: 6px;
+    }
+
+    .card-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%);
+        color: #0F172A;
+        box-shadow: 0 2px 6px rgba(179, 217, 255, 0.3);
+        text-transform: capitalize;
     }
 
     .card-actions {
@@ -641,6 +651,24 @@
             font-size: 20px;
         }
         
+        .data-table {
+            font-size: 11px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 8px;
+        }
+        
+        .card-title {
+            font-size: 12px;
+        }
+        
+        .card-meta {
+            font-size: 12px;
+            gap: 8px;
+        }
+        
         .toast {
             min-width: 250px;
             font-size: 12px;
@@ -753,9 +781,31 @@
             font-size: 18px;
         }
         
+        .data-table {
+            font-size: 10px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 6px;
+        }
+        
         .modal-content {
             max-width: 95%;
             padding: 15px;
+        }
+        
+        .modal-header {
+            padding: 15px;
+        }
+        
+        .modal-body {
+            padding: 15px;
+        }
+        
+        .modal-footer {
+            padding: 15px;
+            gap: 8px;
         }
         
         .toast {
@@ -770,12 +820,14 @@
     }
 </style>
 
+<div class="toast-container" id="toastContainer"></div>
+
 <!-- View Modal -->
 <div id="viewModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="viewModalTitle">Details</h2>
-            <button class="modal-close" onclick="closeModal('viewModal')">×</button>
+            <button class="modal-close" onclick="closeModal('viewModal')">Ã—</button>
         </div>
         <div class="modal-body" id="viewModalBody"></div>
         <div class="modal-footer">
@@ -789,7 +841,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2>Confirm Delete</h2>
-            <button class="modal-close" onclick="closeModal('deleteModal')">×</button>
+            <button class="modal-close" onclick="closeModal('deleteModal')">Ã—</button>
         </div>
         <div class="modal-body">
             <p>Are you sure you want to delete this item? This action cannot be undone.</p>
@@ -802,57 +854,48 @@
 </div>
 
 <div class="income-container">
-    <a href="/admin/financial" class="back-button">← Back to Dashboard</a>
+    <a href="/admin/financial" class="back-button">â† Back to Dashboard</a>
 
     <div class="page-header">
-        <h1>💰 Income Management</h1>
-        <small style="display: block; font-size: 13px; color: #555; margin-top: 8px; font-weight: 500;">Track and manage all your income sources and transactions</small>
+        <h1>ðŸ’° Income Management</h1>
+        <p>Track and manage all your income sources and transactions</p>
     </div>
 
     <!-- Income Summary Cards -->
     <div class="form-section" style="background: linear-gradient(135deg, rgba(179, 217, 255, 0.2) 0%, rgba(179, 255, 179, 0.2) 100%);">
-        <h2 class="section-title">📊 Income Summary</h2>
+        <h2 class="section-title">ðŸ“Š Income Summary</h2>
         <div class="summary-cards" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
             <div class="summary-card" style="background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%);">
-                <div class="summary-card-label">💵 Total Income</div>
+                <div class="summary-card-label">ðŸ’µ Total Income</div>
                 <div class="summary-card-value">${{ number_format($totalIncome ?? 0, 0) }}</div>
                 <div style="font-size: 11px; color: #666; margin-top: 4px;">All Time</div>
             </div>
-            <div class="summary-card" style="background: linear-gradient(135deg, #FFD9B3 0%, #ffcca5 100%);">
-                <div class="summary-card-label">📆 This Month</div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #B3FFB3 0%, #a5ffa5 100%);">
+                <div class="summary-card-label">ðŸ“… This Month</div>
                 <div class="summary-card-value">${{ number_format($thisMonthIncome ?? 0, 0) }}</div>
-                <div style="font-size: 11px; color: #666; margin-top: 4px;">{{ \Carbon\Carbon::now()->format('F') }}</div>
+                <div style="font-size: 11px; color: {{ ($monthlyChange ?? 0) >= 0 ? '#16A34A' : '#DC2626' }}; margin-top: 4px; font-weight: 600;">
+                    {{ ($monthlyChange ?? 0) >= 0 ? 'â†‘' : 'â†“' }} {{ abs($monthlyChange ?? 0) }}% vs last month
+                </div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #FFD9B3 0%, #ffcca5 100%);">
+                <div class="summary-card-label">ðŸ“† Last Month</div>
+                <div class="summary-card-value">${{ number_format($lastMonthIncome ?? 0, 0) }}</div>
+                <div style="font-size: 11px; color: #666; margin-top: 4px;">{{ \Carbon\Carbon::now()->subMonth()->format('F') }}</div>
             </div>
             <div class="summary-card" style="background: linear-gradient(135deg, #D9B3FF 0%, #cca5ff 100%);">
-                <div class="summary-card-label">📈 This Year</div>
+                <div class="summary-card-label">ðŸ“ˆ This Year</div>
                 <div class="summary-card-value">${{ number_format($thisYearIncome ?? 0, 0) }}</div>
                 <div style="font-size: 11px; color: #666; margin-top: 4px;">{{ now()->year }}</div>
             </div>
             <div class="summary-card" style="background: linear-gradient(135deg, #FFB3D9 0%, #ffa5cc 100%);">
-                <div class="summary-card-label">📊 Avg/Month</div>
+                <div class="summary-card-label">ðŸ“Š Avg/Month</div>
                 <div class="summary-card-value">${{ number_format($avgMonthlyIncome ?? 0, 0) }}</div>
                 <div style="font-size: 11px; color: #666; margin-top: 4px;">Average</div>
             </div>
             <div class="summary-card" style="background: linear-gradient(135deg, #B3FFD9 0%, #a5ffcc 100%);">
-                <div class="summary-card-label">🎯 Top Source</div>
+                <div class="summary-card-label">ðŸŽ¯ Top Source</div>
                 <div class="summary-card-value" style="font-size: 18px;">{{ ucfirst(str_replace('_', ' ', $topIncomeSource?->category ?? 'N/A')) }}</div>
                 <div style="font-size: 11px; color: #666; margin-top: 4px;">${{ number_format($topIncomeSource?->total ?? 0, 0) }}</div>
-            </div>
-            <div class="summary-card" style="background: linear-gradient(135deg, #FFCCB3 0%, #ffb8a5 100%);">
-                <div class="summary-card-label">🦁 Account Balance</div>
-                <div class="summary-card-value" id="accountBalanceValue">$0</div>
-                <div style="font-size: 11px; color: #666; margin-top: 4px;">Initial + Allocated</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Account Balances Cards -->
-    <div class="form-section" style="background: linear-gradient(135deg, rgba(179, 255, 179, 0.1) 0%, rgba(179, 217, 255, 0.1) 100%); border-left: 5px solid #B3FFB3;">
-        <h2 class="section-title">🦁 Account Balances</h2>
-        <div id="accountBalancesContainer" style="display: grid; gap: 15px; margin-top: 20px;">
-            <div style="text-align: center; padding: 40px 30px; color: #999; font-size: 14px; background: white; border-radius: 8px; border: 2px dashed #B3FFB3;">
-                <div style="font-size: 40px; margin-bottom: 10px;">🔭</div>
-                No accounts added yet. Add one in the Account Management section to see balances here!
             </div>
         </div>
     </div>
@@ -860,7 +903,7 @@
     <!-- Income Sources Section -->
     <div class="form-section" style="background: linear-gradient(135deg, rgba(179, 217, 255, 0.1) 0%, rgba(179, 255, 179, 0.1) 100%); border-left: 5px solid #B3D9FF;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid #B3D9FF;">
-            <h2 class="section-title" style="color: #0F172A; font-size: 20px; border-bottom: none; margin: 0;">💼 Income Sources</h2>
+            <h2 class="section-title" style="color: #0F172A; font-size: 20px; border-bottom: none; margin: 0;">ðŸ’¼ Income Sources</h2>
             <button type="button" class="btn btn-primary" onclick="toggleIncomeSourceForm()" style="background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%); font-weight: 600; padding: 8px 16px; font-size: 12px;">
                 <span id="toggleSourceBtnText">Show Form</span>
             </button>
@@ -877,28 +920,28 @@
                         <label for="category" style="color: #0F172A; font-weight: 700;">Category *</label>
                         <select id="category" required>
                             <option value="">Select Category</option>
-                            <option value="salary">💼 Salary</option>
-                            <option value="client_payment">💥 Client Payment</option>
-                            <option value="equipment">🖥️ Equipment/Sales</option>
-                            <option value="software">💻 Software/Services</option>
-                            <option value="travel">✈️ Travel/Reimbursement</option>
-                            <option value="utilities">⚡ Utilities/Refund</option>
-                            <option value="marketing">📢 Marketing/Bonus</option>
-                            <option value="savings">🦁 Savings Transfer</option>
-                            <option value="investment_return">📈 Investment Return</option>
-                            <option value="bonus">🎁 Bonus</option>
-                            <option value="freelance">💻 Freelance Work</option>
-                            <option value="rental">🏠 Rental Income</option>
-                            <option value="gift">🎀 Gift</option>
-                            <option value="other">📌 Other Income</option>
+                            <option value="salary">ðŸ’¼ Salary</option>
+                            <option value="client_payment">ðŸ‘¥ Client Payment</option>
+                            <option value="equipment">ðŸ–¥ï¸ Equipment/Sales</option>
+                            <option value="software">ðŸ’» Software/Services</option>
+                            <option value="travel">âœˆï¸ Travel/Reimbursement</option>
+                            <option value="utilities">âš¡ Utilities/Refund</option>
+                            <option value="marketing">ðŸ“¢ Marketing/Bonus</option>
+                            <option value="savings">ðŸ¦ Savings Transfer</option>
+                            <option value="investment_return">ðŸ“ˆ Investment Return</option>
+                            <option value="bonus">ðŸŽ Bonus</option>
+                            <option value="freelance">ðŸ’» Freelance Work</option>
+                            <option value="rental">ðŸ  Rental Income</option>
+                            <option value="gift">ðŸŽ€ Gift</option>
+                            <option value="other">ðŸ“Œ Other Income</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="type" style="color: #0F172A; font-weight: 700;">Type *</label>
                         <select id="type" required>
                             <option value="">Select Type</option>
-                            <option value="recurring">🔄 Recurring</option>
-                            <option value="variable">📊 Variable</option>
+                            <option value="recurring">ðŸ”„ Recurring</option>
+                            <option value="variable">ðŸ“Š Variable</option>
                         </select>
                     </div>
                 </div>
@@ -920,14 +963,14 @@
                 <tbody id="incomeSourcesTableBody"></tbody>
             </table>
             <div id="noSourcesMessage" style="text-align: center; padding: 20px; color: #999; font-size: 13px; background: white; border-radius: 8px; border: 1px solid #e8e8e8;">
-                🔭 No income sources yet. Add one using the form above.
+                ðŸ“­ No income sources yet. Add one using the form above.
             </div>
         </div>
     </div>
 
     <!-- Monthly Budget Section -->
     <div class="form-section" style="background: linear-gradient(135deg, rgba(179, 255, 179, 0.1) 0%, rgba(179, 217, 255, 0.1) 100%); border-left: 5px solid #B3FFB3;">
-        <h2 class="section-title" style="color: #0F172A; font-size: 20px; border-bottom: 3px solid #B3FFB3;">📅 Monthly Income Budget</h2>
+        <h2 class="section-title" style="color: #0F172A; font-size: 20px; border-bottom: 3px solid #B3FFB3;">ðŸ“… Monthly Income Budget</h2>
 
         <form id="budgetForm">
             <div class="form-row" style="gap: 10px;">
@@ -940,7 +983,7 @@
                     <input type="number" id="monthlyBudget" placeholder="$0.00" min="0" step="0.01" required style="padding: 8px; font-size: 13px;">
                 </div>
                 <div style="display: flex; align-items: flex-end;">
-                    <button type="button" class="btn btn-primary" onclick="saveBudget()" style="padding: 8px 14px; font-size: 12px; margin-bottom: 0;">💾 Save Budget</button>
+                    <button type="button" class="btn btn-primary" onclick="saveBudget()" style="padding: 8px 14px; font-size: 12px; margin-bottom: 0;">ðŸ’¾ Save Budget</button>
                 </div>
             </div>
         </form>
@@ -949,7 +992,7 @@
         <div id="budgetDisplayCard" style="display: none; margin-top: 20px;">
             <div class="card-row" style="grid-template-columns: 1fr auto; gap: 20px;">
                 <div class="card-content">
-                    <div class="card-title">💰 Current Budget</div>
+                    <div class="card-title">ðŸ’° Current Budget</div>
                     <div class="card-meta">
                         <div class="card-meta-item">
                             <strong>Month:</strong> <span id="budgetMonth"></span>
@@ -960,8 +1003,8 @@
                     </div>
                 </div>
                 <div class="card-actions">
-                    <button type="button" class="btn btn-small btn-edit" onclick="editBudget()">✏️ Edit</button>
-                    <button type="button" class="btn btn-small btn-delete" onclick="clearBudget()">🗑️ Clear</button>
+                    <button type="button" class="btn btn-small btn-edit" onclick="editBudget()">âœï¸ Edit</button>
+                    <button type="button" class="btn btn-small btn-delete" onclick="clearBudget()">ðŸ—‘ï¸ Clear</button>
                 </div>
             </div>
         </div>
@@ -969,7 +1012,7 @@
 
     <!-- Income Transactions Section -->
     <div class="form-section" style="background: linear-gradient(135deg, rgba(179, 255, 179, 0.1) 0%, rgba(179, 217, 255, 0.1) 100%); border-left: 5px solid #B3FFB3;">
-        <h2 class="section-title" style="color: #0F172A; font-size: 20px; border-bottom: 3px solid #B3FFB3;">📋 Income Transactions</h2>
+        <h2 class="section-title" style="color: #0F172A; font-size: 20px; border-bottom: 3px solid #B3FFB3;">ðŸ“‹ Income Transactions</h2>
         <p style="color: #555; margin-bottom: 20px; font-size: 14px; font-weight: 500;">Record your actual income received</p>
 
         <form id="incomeTrackingForm">
@@ -1005,19 +1048,19 @@
                     </select>
                 </div>
             </div>
-            <button type="button" class="btn btn-primary" onclick="saveActualIncome()" style="background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%); font-weight: 700; box-shadow: 0 4px 12px rgba(179, 217, 255, 0.3);">💾 Save Income Transaction</button>
+            <button type="button" class="btn btn-primary" onclick="saveActualIncome()" style="background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%); font-weight: 700; box-shadow: 0 4px 12px rgba(179, 217, 255, 0.3);">ðŸ’¾ Save Income Transaction</button>
         </form>
 
         <!-- Income Transactions Table -->
         <div style="margin-top: 30px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid #B3FFB3;">
-                <h3 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">📊 Transaction History</h3>
+                <h3 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">ðŸ“Š Transaction History</h3>
                 <button type="button" class="btn btn-primary" onclick="toggleTransactionHistory()" style="background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%); font-weight: 600; padding: 8px 16px; font-size: 12px;">
                     <span id="toggleBtnText">Show Transactions</span>
                 </button>
             </div>
             
-            <div id="transactionHistoryContainer" style="display: block;">
+            <div id="transactionHistoryContainer" style="display: none;">
                 <!-- Table Format -->
                 <div style="overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <table id="incomeTransactionsTable" style="width: 100%; border-collapse: collapse; display: none;">
@@ -1037,15 +1080,15 @@
                 </div>
 
                 <div id="noTransactionsMessage" style="text-align: center; padding: 40px 30px; color: #999; font-size: 14px; background: white; border-radius: 8px; border: 2px dashed #B3FFB3;">
-                    <div style="font-size: 40px; margin-bottom: 10px;">🔭</div>
+                    <div style="font-size: 40px; margin-bottom: 10px;">ðŸ“­</div>
                     No income transactions yet. Add one above to get started!
                 </div>
                 
                 <!-- Pagination Controls -->
                 <div id="paginationControls" style="display: none; margin-top: 20px; text-align: center; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <button type="button" class="btn btn-primary" onclick="previousPage()" style="margin-right: 10px; background: linear-gradient(135deg, #B3FFB3 0%, #a5ffa5 100%); font-weight: 600;">← Previous</button>
+                    <button type="button" class="btn btn-primary" onclick="previousPage()" style="margin-right: 10px; background: linear-gradient(135deg, #B3FFB3 0%, #a5ffa5 100%); font-weight: 600;">â† Previous</button>
                     <span id="pageInfo" style="margin: 0 15px; font-weight: 700; color: #0F172A; font-size: 14px;"></span>
-                    <button type="button" class="btn btn-primary" onclick="nextPage()" style="margin-left: 10px; background: linear-gradient(135deg, #B3FFB3 0%, #a5ffa5 100%); font-weight: 600;">Next →</button>
+                    <button type="button" class="btn btn-primary" onclick="nextPage()" style="margin-left: 10px; background: linear-gradient(135deg, #B3FFB3 0%, #a5ffa5 100%); font-weight: 600;">Next â†’</button>
                 </div>
             </div>
         </div>
@@ -1054,7 +1097,7 @@
     <!-- Account Management Section -->
     <div class="form-section" style="background: linear-gradient(135deg, rgba(179, 217, 255, 0.1) 0%, rgba(179, 255, 179, 0.1) 100%); border-left: 5px solid #B3D9FF;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid #B3D9FF;">
-            <h2 class="section-title" style="color: #0F172A; font-size: 20px; border-bottom: none; margin: 0;">🦁 Account Management</h2>
+            <h2 class="section-title" style="color: #0F172A; font-size: 20px; border-bottom: none; margin: 0;">ðŸ¦ Account Management</h2>
             <button type="button" class="btn btn-primary" onclick="toggleAccountForm()" style="background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%); font-weight: 600; padding: 8px 16px; font-size: 12px;">
                 <span id="toggleAccountBtnText">Add Account</span>
             </button>
@@ -1072,12 +1115,12 @@
                         <label for="accountType" style="color: #0F172A; font-weight: 700;">Account Type *</label>
                         <select id="accountType" required>
                             <option value="">Select Type</option>
-                            <option value="cash">💵 Cash</option>
-                            <option value="bank_savings">🦁 Bank Savings</option>
-                            <option value="bank_expense">🦁 Bank Expense</option>
-                            <option value="digital_wallet">📱 Digital Wallet</option>
-                            <option value="investment">📈 Investment</option>
-                            <option value="other">📌 Other</option>
+                            <option value="cash">ðŸ’µ Cash</option>
+                            <option value="bank_savings">ðŸ¦ Bank Savings</option>
+                            <option value="bank_expense">ðŸ¦ Bank Expense</option>
+                            <option value="digital_wallet">ðŸ“± Digital Wallet</option>
+                            <option value="investment">ðŸ“ˆ Investment</option>
+                            <option value="other">ðŸ“Œ Other</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1092,7 +1135,7 @@
         <!-- Accounts Table Section -->
         <div style="margin-top: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid #B3D9FF;">
-                <h3 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">📋 Added Accounts</h3>
+                <h3 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">ðŸ“‹ Added Accounts</h3>
                 <button type="button" class="btn btn-primary" onclick="toggleAccountsTable()" style="background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%); font-weight: 600; padding: 8px 16px; font-size: 12px;">
                     <span id="toggleAccountsBtnText">Show Accounts</span>
                 </button>
@@ -1116,7 +1159,7 @@
                 </div>
 
                 <div id="noAccountsMessage" style="text-align: center; padding: 40px 30px; color: #999; font-size: 14px; background: white; border-radius: 8px; border: 2px dashed #B3D9FF;">
-                    <div style="font-size: 40px; margin-bottom: 10px;">🔭</div>
+                    <div style="font-size: 40px; margin-bottom: 10px;">ðŸ“­</div>
                     No accounts added yet. Add one above to get started!
                 </div>
             </div>
@@ -1125,23 +1168,23 @@
 
     <!-- Summary Charts Section -->
     <div class="form-section">
-        <h2 class="section-title">📈 Income Analytics</h2>
+        <h2 class="section-title">ðŸ“ˆ Income Analytics</h2>
         
         <div class="charts-grid">
             <div class="chart-container">
-                <div class="chart-title">💰 Total Budgeted vs Actual</div>
+                <div class="chart-title">ðŸ’° Total Budgeted vs Actual</div>
                 <div class="chart-wrapper" style="height: 180px;">
                     <canvas id="incomeSummaryChart" style="max-width: 100%; max-height: 180px;"></canvas>
                 </div>
             </div>
             <div class="chart-container">
-                <div class="chart-title">🎯 Income Sources Breakdown</div>
+                <div class="chart-title">ðŸŽ¯ Income Sources Breakdown</div>
                 <div class="chart-wrapper" style="height: 180px;">
                     <canvas id="incomeSourcesBreakdownChart" style="max-width: 100%; max-height: 180px;"></canvas>
                 </div>
             </div>
             <div class="chart-container">
-                <div class="chart-title">📊 Income Distribution by Category</div>
+                <div class="chart-title">ðŸ“Š Income Distribution by Category</div>
                 <div class="chart-wrapper" style="height: 180px;">
                     <canvas id="incomeDistributionChart" style="max-width: 100%; max-height: 180px;"></canvas>
                 </div>
@@ -1169,18 +1212,11 @@
     }
 
     function showAlert(message, type = 'success') {
-        let toastContainer = document.getElementById('toastContainer');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.id = 'toastContainer';
-            toastContainer.className = 'toast-container';
-            document.body.appendChild(toastContainer);
-        }
-        
+        const toastContainer = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         
-        const icon = type === 'success' ? '✅' : '❌';
+        const icon = type === 'success' ? 'âœ…' : 'âŒ';
         const title = type === 'success' ? 'Success!' : 'Error';
         
         toast.innerHTML = `
@@ -1189,7 +1225,7 @@
                 <div class="toast-title">${title}</div>
                 <div class="toast-message">${message}</div>
             </div>
-            <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            <button class="toast-close" onclick="this.parentElement.remove()">Ã—</button>
         `;
         
         toastContainer.appendChild(toast);
@@ -1246,11 +1282,8 @@
                 document.getElementById('sourceName').value = '';
                 document.getElementById('category').value = '';
                 document.getElementById('type').value = '';
+                loadIncomeSources();
                 showAlert('Income source saved successfully!', 'success');
-                
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
             } else {
                 showAlert('Error: ' + (data.message || 'Unknown error'), 'error');
             }
@@ -1317,7 +1350,7 @@
             };
 
             row.innerHTML = `
-                <td style="padding: 10px 12px; text-align: left; color: #333; border-right: 1px solid rgba(0,0,0,0.1); font-weight: 600;">💼 ${source.sourceName}</td>
+                <td style="padding: 10px 12px; text-align: left; color: #333; border-right: 1px solid rgba(0,0,0,0.1); font-weight: 600;">ðŸ’¼ ${source.sourceName}</td>
                 <td style="padding: 10px 12px; text-align: left; color: #333; border-right: 1px solid rgba(0,0,0,0.1);">
                     <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%); color: #0F172A; font-weight: 600; font-size: 11px;">${source.category}</span>
                 </td>
@@ -1325,9 +1358,9 @@
                     <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; background: linear-gradient(135deg, #B3FFB3 0%, #a5ffa5 100%); color: #0F172A; font-weight: 600; font-size: 11px;">${source.type}</span>
                 </td>
                 <td style="padding: 10px 12px; text-align: center; color: #333;">
-                    <button type="button" class="btn btn-small btn-view" onclick="viewIncomeSource(${source.id})" style="padding: 6px 10px; font-size: 11px; margin-right: 4px;">👁️</button>
-                    <button type="button" class="btn btn-small btn-edit" onclick="editIncomeSource(${source.id})" style="padding: 6px 10px; font-size: 11px; margin-right: 4px;">✏️</button>
-                    <button type="button" class="btn btn-small btn-delete" onclick="openDeleteModal(${source.id}, 'source')" style="padding: 6px 10px; font-size: 11px;">🗑️</button>
+                    <button type="button" class="btn btn-small btn-view" onclick="viewIncomeSource(${source.id})" style="padding: 6px 10px; font-size: 11px; margin-right: 4px;">ðŸ‘ï¸</button>
+                    <button type="button" class="btn btn-small btn-edit" onclick="editIncomeSource(${source.id})" style="padding: 6px 10px; font-size: 11px; margin-right: 4px;">âœï¸</button>
+                    <button type="button" class="btn btn-small btn-delete" onclick="openDeleteModal(${source.id}, 'source')" style="padding: 6px 10px; font-size: 11px;">ðŸ—‘ï¸</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -1496,19 +1529,9 @@
             return;
         }
         
+        // Find the account name from allAccounts
         const selectedAccount = allAccounts.find(a => a.id == accountId);
         const accountName = selectedAccount ? selectedAccount.name : 'Unknown';
-        
-        const accountTypeMap = {
-            'cash': 'cash',
-            'bank_savings': 'anz_savings',
-            'bank_expense': 'anz_expense',
-            'digital_wallet': 'cash',
-            'investment': 'anz_savings',
-            'other': 'cash'
-        };
-        
-        const accountType = selectedAccount ? (accountTypeMap[selectedAccount.type] || 'cash') : 'cash';
         
         fetch('/admin/financial/transactions', {
             method: 'POST',
@@ -1522,75 +1545,26 @@
                 description: description || 'Income Transaction',
                 amount: amount,
                 currency: 'USD',
-                account: accountType,
+                account: accountName,
                 transaction_date: incomeDate,
                 project_id: null,
-                notes: JSON.stringify({ account_name: accountName })
+                notes: 'Added from income management page'
             })
         })
         .then(response => {
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return response.json().then(data => ({
-                    ok: response.ok,
-                    data: data
-                }));
-            } else {
-                return response.text().then(text => {
-                    try {
-                        return {
-                            ok: response.ok,
-                            data: JSON.parse(text)
-                        };
-                    } catch (e) {
-                        return {
-                            ok: response.ok,
-                            data: { success: response.ok, message: text }
-                        };
-                    }
-                });
-            }
-        })
-        .then(result => {
-            const data = result.data;
-            
-            if (result.ok && (data.success === true || data.id)) {
-                const newTransaction = {
-                    id: data.id || Math.random(),
-                    transaction_date: incomeDate,
-                    amount: amount,
-                    status: 'completed',
-                    description: description || 'Income Transaction',
-                    category: 'salary',
-                    account: accountName
-                };
-                
-                allIncomeTransactions.unshift(newTransaction);
-                
-                if (selectedAccount) {
-                    selectedAccount.balance = parseFloat(selectedAccount.balance) + amount;
-                }
-                
+            if (response.ok) {
                 document.getElementById('actualMonthlyIncome').value = '';
                 document.getElementById('incomeDescription').value = '';
                 document.getElementById('incomeDate').valueAsDate = new Date();
                 document.getElementById('incomeSource').value = '';
                 document.getElementById('incomeAccount').value = '';
                 
-                const saveBtn = document.querySelector('button[onclick="saveActualIncome()"]');
-                saveBtn.textContent = '💾 Save Income Transaction';
-                saveBtn.style.background = 'linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%)';
-                document.getElementById('incomeTrackingForm').dataset.editingId = '';
-                
-                currentPage = 1;
-                displayIncomeTransactions();
-                updateAccountBalanceCards();
-                updateAccountBalanceSummary();
-                updateAccountsTable();
-                updateCharts();
-                showAlert('Income transaction saved successfully!', 'success');
-            } else if (!result.ok) {
-                showAlert('Error: ' + (data.message || 'Unknown error'), 'error');
+                loadIncomeTransactions().then(() => {
+                    updateCharts();
+                    showAlert('Income transaction saved successfully!', 'success');
+                });
+            } else {
+                showAlert('Error saving income transaction', 'error');
             }
         })
         .catch(error => {
@@ -1599,6 +1573,7 @@
         });
     }
 
+    // Pagination variables
     let allIncomeTransactions = [];
     let currentPage = 1;
     const itemsPerPage = 5;
@@ -1610,7 +1585,7 @@
             id: t.id,
             transaction_date: t.transaction_date,
             amount: t.amount,
-            status: t.status || 'completed',
+            status: t.status,
             description: t.description,
             category: t.category,
             account: t.account
@@ -1666,26 +1641,25 @@
                 this.style.boxShadow = 'none';
             };
 
-            let accountDisplay = 'N/A';
-            try {
-                if (transaction.notes) {
-                    const notes = typeof transaction.notes === 'string' ? JSON.parse(transaction.notes) : transaction.notes;
-                    if (notes.account_name) {
-                        accountDisplay = notes.account_name;
-                    }
-                }
-            } catch (e) {
-                console.error('Error parsing notes:', e);
-            }
+            const accountEmoji = {
+                'cash': 'ðŸ’µ',
+                'anz_expense': 'ðŸ¦',
+                'anz_savings': 'ðŸ¦',
+                'other': 'ðŸ“Œ'
+            };
             
-            if (accountDisplay === 'N/A') {
-                const accountObj = allAccounts.find(a => a.type === transaction.account);
-                accountDisplay = accountObj ? accountObj.name : (transaction.account || 'N/A');
-            }
+            const accountLabel = {
+                'cash': 'Cash On Hand',
+                'anz_expense': 'Bank Expense',
+                'anz_savings': 'Bank Savings',
+                'other': 'Other'
+            };
+            
+            const accountDisplay = transaction.account ? `${accountEmoji[transaction.account] || 'ðŸ’³'} ${accountLabel[transaction.account] || transaction.account}` : 'N/A';
 
             row.innerHTML = `
                 <td style="padding: 15px; text-align: left; font-size: 13px; color: #333; border-right: 1px solid #e8e8e8; font-weight: 500;">${date}</td>
-                <td style="padding: 15px; text-align: left; font-size: 13px; color: #333; border-right: 1px solid #e8e8e8; font-weight: 600;">💰 ${description}</td>
+                <td style="padding: 15px; text-align: left; font-size: 13px; color: #333; border-right: 1px solid #e8e8e8; font-weight: 600;">ðŸ’° ${description}</td>
                 <td style="padding: 15px; text-align: left; font-size: 13px; color: #333; border-right: 1px solid #e8e8e8;">
                     <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%); color: #0F172A; font-weight: 600; font-size: 11px;">${category}</span>
                 </td>
@@ -1694,12 +1668,12 @@
                     <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; background: linear-gradient(135deg, #FFD9B3 0%, #ffcca5 100%); color: #0F172A; font-weight: 600; font-size: 11px;">${accountDisplay}</span>
                 </td>
                 <td style="padding: 15px; text-align: center; font-size: 13px; border-right: 1px solid #e8e8e8;">
-                    <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; background: linear-gradient(135deg, #B3FFB3 0%, #a5ffa5 100%); color: #0F172A; font-weight: 600; font-size: 11px; text-transform: capitalize;">completed</span>
+                    <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; background: linear-gradient(135deg, #B3FFB3 0%, #a5ffa5 100%); color: #0F172A; font-weight: 600; font-size: 11px; text-transform: capitalize;">${status}</span>
                 </td>
                 <td style="padding: 15px; text-align: center; font-size: 13px;">
-                    <button type="button" class="btn btn-small btn-view" onclick="viewTransaction(${transaction.id})" style="padding: 6px 10px; font-size: 11px; margin-right: 4px;">👁️</button>
-                    <button type="button" class="btn btn-small btn-edit" onclick="editTransaction(${transaction.id})" style="padding: 6px 10px; font-size: 11px; margin-right: 4px;">✏️</button>
-                    <button type="button" class="btn btn-small btn-delete" onclick="openDeleteModal(${transaction.id}, 'transaction')" style="padding: 6px 10px; font-size: 11px;">🗑️</button>
+                    <button type="button" class="btn btn-small btn-view" onclick="viewTransaction(${transaction.id})" style="padding: 6px 10px; font-size: 11px; margin-right: 4px;">ðŸ‘ï¸</button>
+                    <button type="button" class="btn btn-small btn-edit" onclick="editTransaction(${transaction.id})" style="padding: 6px 10px; font-size: 11px; margin-right: 4px;">âœï¸</button>
+                    <button type="button" class="btn btn-small btn-delete" onclick="openDeleteModal(${transaction.id}, 'transaction')" style="padding: 6px 10px; font-size: 11px;">ðŸ—‘ï¸</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -1765,10 +1739,12 @@
             document.getElementById('actualMonthlyIncome').value = parseFloat(transaction.amount).toFixed(2);
             document.getElementById('incomeDescription').value = transaction.description || '';
             
+            // Store the transaction ID for update
             document.getElementById('incomeTrackingForm').dataset.editingId = id;
             
+            // Change button text
             const saveBtn = document.querySelector('button[onclick="saveActualIncome()"]');
-            saveBtn.textContent = '✏️ Update Income Transaction';
+            saveBtn.textContent = 'âœï¸ Update Income Transaction';
             saveBtn.style.background = 'linear-gradient(135deg, #B3FFB3 0%, #a5ffa5 100%)';
             
             document.getElementById('incomeTrackingForm').scrollIntoView({ behavior: 'smooth' });
@@ -1789,9 +1765,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                allIncomeTransactions = allIncomeTransactions.filter(t => t.id !== id);
-                currentPage = 1;
-                displayIncomeTransactions();
+                loadIncomeTransactions();
                 showAlert('Transaction deleted successfully!', 'success');
             } else {
                 showAlert('Error: ' + (data.message || 'Unknown error'), 'error');
@@ -1815,25 +1789,20 @@
         if (ctx.chart) ctx.chart.destroy();
 
         const values = monthlyIncomeData.values || actualIncome || [];
-        const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const firstHalf = values.slice(0, 6).reduce((a, b) => a + b, 0);
+        const secondHalf = values.slice(6).reduce((a, b) => a + b, 0);
+        
+        console.log('Income Summary Chart Data:', { firstHalf, secondHalf, values });
         
         ctx.chart = new Chart(ctx, {
-            type: 'line',
+            type: 'doughnut',
             data: {
-                labels: monthLabels,
+                labels: ['First Half', 'Second Half'],
                 datasets: [{
-                    label: 'Monthly Income',
-                    data: values,
-                    borderColor: '#B3D9FF',
-                    backgroundColor: 'rgba(179, 217, 255, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#B3D9FF',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
+                    data: [firstHalf || 0, secondHalf || 0],
+                    backgroundColor: ['#B3D9FF', '#B3FFB3'],
+                    borderColor: '#fff',
+                    borderWidth: 2
                 }]
             },
             options: {
@@ -1843,15 +1812,6 @@
                     legend: {
                         position: 'bottom',
                         labels: { font: { size: 11 } }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { font: { size: 10 } }
-                    },
-                    x: {
-                        ticks: { font: { size: 10 } }
                     }
                 }
             }
@@ -1910,20 +1870,14 @@
         const categoryValues = incomeByCategory.map(item => item.total || 0);
 
         ctx.chart = new Chart(ctx, {
-            type: 'radar',
+            type: 'doughnut',
             data: {
                 labels: categoryLabels.length > 0 ? categoryLabels : ['No Data'],
                 datasets: [{
-                    label: 'Income by Category',
                     data: categoryValues.length > 0 ? categoryValues : [1],
-                    borderColor: '#B3D9FF',
-                    backgroundColor: 'rgba(179, 217, 255, 0.2)',
-                    borderWidth: 2,
-                    pointBackgroundColor: '#B3D9FF',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
+                    backgroundColor: ['#B3D9FF', '#B3FFB3', '#FFD9B3', '#D9B3FF', '#FFCCB3', '#FFB3D9', '#B3FFD9', '#E6D9FF'],
+                    borderColor: '#fff',
+                    borderWidth: 2
                 }]
             },
             options: {
@@ -1933,12 +1887,6 @@
                     legend: {
                         position: 'bottom',
                         labels: { font: { size: 10 } }
-                    }
-                },
-                scales: {
-                    r: {
-                        beginAtZero: true,
-                        ticks: { font: { size: 9 } }
                     }
                 }
             }
@@ -1971,6 +1919,7 @@
         }
     }
 
+    // Account Management Functions
     let allAccounts = [];
 
     function toggleAccountForm() {
@@ -1986,19 +1935,6 @@
         }
     }
 
-    function toggleAccountsTable() {
-        const container = document.getElementById('accountsTableContainer');
-        const btn = document.getElementById('toggleAccountsBtnText');
-        
-        if (container.style.display === 'none') {
-            container.style.display = 'block';
-            btn.textContent = 'Hide Accounts';
-        } else {
-            container.style.display = 'none';
-            btn.textContent = 'Show Accounts';
-        }
-    }
-
     function addAccount() {
         const accountName = document.getElementById('accountName').value;
         const accountType = document.getElementById('accountType').value;
@@ -2009,6 +1945,7 @@
             return;
         }
 
+        // Save to database via API
         fetch('/admin/api/financial/account', {
             method: 'POST',
             headers: {
@@ -2033,15 +1970,15 @@
                 document.getElementById('accountType').value = '';
                 document.getElementById('accountBalance').value = '';
                 
-                allAccounts.push({ id: data.id, name: accountName, type: accountType, balance: accountBalance, createdAt: new Date().toLocaleDateString() });
-                updateAccountsTable();
-                populateAccountDropdown();
-                updateAccountBalanceCards();
-                updateAccountBalanceSummary();
-                showAlert('Account created and saved to database successfully!', 'success');
+                return loadAccounts();
             } else {
-                showAlert('Error: ' + (data.message || 'Unknown error'), 'error');
+                throw new Error(data.message || 'Unknown error');
             }
+        })
+        .then(() => {
+            updateAccountsTable();
+            populateAccountDropdown();
+            showAlert('Account created and saved to database successfully!', 'success');
         })
         .catch(error => {
             console.error('Error:', error);
@@ -2062,14 +1999,19 @@
             if (data.success && data.data) {
                 allAccounts = data.data.map(account => ({
                     id: account.id,
-                    name: account.account_name,
-                    type: account.account_type,
-                    balance: parseFloat(account.balance),
-                    createdAt: new Date(account.created_at).toLocaleDateString()
+                    name: account.name,
+                    type: account.type,
+                    balance: account.balance,
+                    createdAt: account.created_at
                 }));
+                console.log('Loaded accounts from database:', allAccounts);
             }
+            return data;
         })
-        .catch(error => console.error('Error loading accounts:', error));
+        .catch(error => {
+            console.error('Error loading accounts:', error);
+            throw error;
+        });
     }
 
     function populateAccountDropdown() {
@@ -2078,25 +2020,33 @@
             console.error('Dropdown not found');
             return;
         }
-
+        
+        console.log('Populating dropdown with accounts:', allAccounts);
+        
+        // Clear existing options except the first one
         while (dropdown.options.length > 1) {
             dropdown.remove(1);
         }
-
+        
+        // Add user-created accounts
         allAccounts.forEach(account => {
             const typeEmoji = {
-                'cash': '💵',
-                'bank_savings': '🦁',
-                'bank_expense': '🦁',
-                'digital_wallet': '📱',
-                'investment': '📈',
-                'other': '📌'
+                'cash': 'ðŸ’µ',
+                'bank_savings': 'ðŸ¦',
+                'bank_expense': 'ðŸ¦',
+                'digital_wallet': 'ðŸ“±',
+                'investment': 'ðŸ“ˆ',
+                'other': 'ðŸ“Œ'
             };
+            
             const option = document.createElement('option');
             option.value = account.id;
-            option.textContent = `${typeEmoji[account.type] || '💳'} ${account.name}`;
+            option.textContent = `${typeEmoji[account.type] || 'ðŸ’³'} ${account.name}`;
             dropdown.appendChild(option);
+            console.log('Added option:', option.textContent);
         });
+        
+        console.log('Dropdown now has', dropdown.options.length, 'options');
     }
 
     function updateAccountsTable() {
@@ -2116,12 +2066,12 @@
 
         allAccounts.forEach((account, index) => {
             const typeEmoji = {
-                'cash': '💵',
-                'bank_savings': '🦁',
-                'bank_expense': '🦁',
-                'digital_wallet': '📱',
-                'investment': '📈',
-                'other': '📌'
+                'cash': 'ðŸ’µ',
+                'bank_savings': 'ðŸ¦',
+                'bank_expense': 'ðŸ¦',
+                'digital_wallet': 'ðŸ“±',
+                'investment': 'ðŸ“ˆ',
+                'other': 'ðŸ“Œ'
             };
 
             const row = document.createElement('tr');
@@ -2129,151 +2079,24 @@
             row.style.backgroundColor = rowBg;
             row.style.borderBottom = '1px solid #e8e8e8';
             row.style.transition = 'all 0.2s ease';
-
+            
             row.onmouseover = function() {
                 this.style.backgroundColor = '#f0f7ff';
             };
-
+            
             row.onmouseout = function() {
                 this.style.backgroundColor = rowBg;
             };
 
             row.innerHTML = `
-                <td style="padding: 15px; text-align: left; font-size: 13px; color: #333; border-right: 1px solid #e8e8e8; font-weight: 600;">${typeEmoji[account.type] || '💳'} ${account.name}</td>
-                <td style="padding: 15px; text-align: left; font-size: 13px; color: #333; border-right: 1px solid #e8e8e8;">
+                <td style="padding: 15px; text-align: left; color: #333; border-right: 1px solid rgba(0,0,0,0.1); font-weight: 600;">${typeEmoji[account.type] || 'ðŸ’³'} ${account.name}</td>
+                <td style="padding: 15px; text-align: left; color: #333; border-right: 1px solid rgba(0,0,0,0.1);">
                     <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; background: linear-gradient(135deg, #B3D9FF 0%, #a5d4ff 100%); color: #0F172A; font-weight: 600; font-size: 11px;">${account.type.replace('_', ' ')}</span>
                 </td>
-                <td style="padding: 15px; text-align: right; font-size: 13px; color: #333; border-right: 1px solid #e8e8e8; font-weight: 700;">$${parseFloat(account.balance).toFixed(2)}</td>
-                <td style="padding: 15px; text-align: left; font-size: 13px; color: #333; border-right: 1px solid #e8e8e8;">${account.createdAt}</td>
-                <td style="padding: 15px; text-align: center; font-size: 13px;">
-                    <button type="button" class="btn btn-small btn-edit" onclick="editAccount(${account.id})" style="padding: 6px 10px; font-size: 11px; margin-right: 4px;">✏️</button>
-                    <button type="button" class="btn btn-small btn-delete" onclick="deleteAccount(${account.id})" style="padding: 6px 10px; font-size: 11px;">🗑️</button>
+                <td style="padding: 15px; text-align: right; color: #16A34A; border-right: 1px solid rgba(0,0,0,0.1); font-weight: 700;">${parseFloat(account.balance).toFixed(2)}</td>
+                <td style="padding: 15px; text-align: left; color: #333; border-right: 1px solid rgba(0,0,0,0.1);">${account.createdAt}</td>
+                <td style="padding: 15px; text-align: center; color: #333;">
+                    <button type="button" class="btn btn-small btn-edit" onclick="editAccount(${account.id})" style="padding: 6px 10px; font-size: 11px; margin-right: 4px;">âœï¸</button>
+                    <button type="button" class="btn btn-small btn-delete" onclick="deleteAccount(${account.id})" style="padding: 6px 10px; font-size: 11px;">ðŸ—‘ï¸</button>
                 </td>
-            `;
-            tbody.appendChild(row);
-        });
-    }
 
-    function editAccount(id) {
-        const account = allAccounts.find(a => a.id === id);
-        if (account) {
-            document.getElementById('accountName').value = account.name;
-            document.getElementById('accountType').value = account.type;
-            document.getElementById('accountBalance').value = account.balance;
-            allAccounts = allAccounts.filter(a => a.id !== id);
-            updateAccountsTable();
-            document.getElementById('accountForm').scrollIntoView({ behavior: 'smooth' });
-            showAlert('Edit the account and click "Add Account" to save changes', 'success');
-        }
-    }
-
-    function deleteAccount(id) {
-        if (confirm('Are you sure you want to delete this account?')) {
-            fetch(`/admin/api/financial/account/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    loadAccounts().then(() => {
-                        updateAccountsTable();
-                        populateAccountDropdown();
-                        updateAccountBalanceCards();
-                        updateAccountBalanceSummary();
-                        showAlert('Account deleted successfully!', 'success');
-                    });
-                } else {
-                    showAlert('Error: ' + (data.message || 'Unknown error'), 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('Error deleting account: ' + error.message, 'error');
-            });
-        }
-    }
-
-    function updateAccountBalanceCards() {
-        const container = document.getElementById('accountBalancesContainer');
-        if (allAccounts.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: 40px 30px; color: #999; font-size: 14px; background: white; border-radius: 8px; border: 2px dashed #B3FFB3;">
-                    <div style="font-size: 40px; margin-bottom: 10px;">🔭</div>
-                    No accounts added yet. Add one in the Account Management section to see balances here!
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = '';
-        allAccounts.forEach(account => {
-            const typeEmoji = {
-                'cash': '💵',
-                'bank_savings': '🦁',
-                'bank_expense': '🦁',
-                'digital_wallet': '📱',
-                'investment': '📈',
-                'other': '📌'
-            };
-
-            const card = document.createElement('div');
-            card.style.cssText = `
-                background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-                border: 2px solid #e8e8e8;
-                border-radius: 12px;
-                padding: 20px;
-                display: grid;
-                grid-template-columns: 1fr auto;
-                gap: 20px;
-                align-items: center;
-                transition: all 0.3s ease;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-                position: relative;
-                overflow: hidden;
-            `;
-
-            card.innerHTML = `
-                <div class="card-content">
-                    <div class="card-title">${typeEmoji[account.type] || '💳'} ${account.name}</div>
-                    <div class="card-meta">
-                        <div class="card-meta-item">
-                            <strong>Type:</strong> ${account.type.replace('_', ' ')}
-                        </div>
-                        <div class="card-meta-item">
-                            <strong>Balance:</strong> $${parseFloat(account.balance).toFixed(2)}
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            container.appendChild(card);
-        });
-    }
-
-    function updateAccountBalanceSummary() {
-        const totalBalance = allAccounts.reduce((sum, account) => sum + parseFloat(account.balance || 0), 0);
-        const balanceElement = document.getElementById('accountBalanceValue');
-        if (balanceElement) {
-            balanceElement.textContent = '$' + totalBalance.toFixed(2);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeCurrentMonth();
-        loadIncomeSources();
-        loadIncomeTransactions();
-        loadAccounts().then(() => {
-            updateAccountsTable();
-            populateAccountDropdown();
-            updateAccountBalanceCards();
-            updateAccountBalanceSummary();
-        });
-        updateCharts();
-    });
-</script>
-
-@endsection

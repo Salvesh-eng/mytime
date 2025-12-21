@@ -24,6 +24,12 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Reauthentication routes
+Route::middleware('auth')->group(function () {
+    Route::get('/reauthenticate', [\App\Http\Controllers\ReauthenticationController::class, 'show'])->name('reauthenticate.show');
+    Route::post('/reauthenticate', [\App\Http\Controllers\ReauthenticationController::class, 'verify'])->name('reauthenticate.verify');
+});
+
 // Public motivation page (English + Hindi videos)
 Route::get('/motivation', [MotivationController::class, 'index'])->name('motivation.index');
 
@@ -158,86 +164,94 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::put('/team-members/{teamMember}', [TeamMemberController::class, 'update'])->name('admin.team-members.update');
     Route::delete('/team-members/{teamMember}', [TeamMemberController::class, 'destroy'])->name('admin.team-members.destroy');
     
-    // Financial Management
-    Route::get('/financial', [FinancialController::class, 'index'])->name('admin.financial.index');
-    
-    // Income Management
-    Route::get('/financial/income', [FinancialController::class, 'showIncome'])->name('admin.financial.income');
-    Route::post('/financial/income', [FinancialController::class, 'storeIncome'])->name('admin.financial.storeIncome');
-    
-    // Expense Management
-    Route::get('/financial/expense', function () {
-        return view('admin.financial.expense');
-    })->name('admin.financial.expense');
-    Route::post('/financial/expense', [FinancialController::class, 'storeExpense'])->name('admin.financial.storeExpense');
-    
-    // Savings Management
-    Route::get('/financial/savings', function () {
-        return view('admin.financial.savings');
-    })->name('admin.financial.savings');
-    Route::post('/financial/savings', [FinancialController::class, 'storeSavings'])->name('admin.financial.storeSavings');
-    
-    // Donation Management
-    Route::get('/financial/donation', function () {
-        return view('admin.financial.donation');
-    })->name('admin.financial.donation');
-    Route::post('/financial/donation', [FinancialController::class, 'storeDonation'])->name('admin.financial.storeDonation');
+    // Financial Management - Protected with reauthentication
+    Route::middleware('require.reauthentication')->group(function () {
+        Route::get('/financial', [FinancialController::class, 'index'])->name('admin.financial.index');
+        
+        // Income Management
+        Route::get('/financial/income', [FinancialController::class, 'showIncome'])->name('admin.financial.income');
+        Route::post('/financial/income', [FinancialController::class, 'storeIncome'])->name('admin.financial.storeIncome');
+        
+        // Expense Management
+        Route::get('/financial/expense', function () {
+            return view('admin.financial.expense');
+        })->name('admin.financial.expense');
+        Route::post('/financial/expense', [FinancialController::class, 'storeExpense'])->name('admin.financial.storeExpense');
+        
+        // Savings Management
+        Route::get('/financial/savings', function () {
+            return view('admin.financial.savings');
+        })->name('admin.financial.savings');
+        Route::post('/financial/savings', [FinancialController::class, 'storeSavings'])->name('admin.financial.storeSavings');
+        
+        // Donation Management
+        Route::get('/financial/donation', function () {
+            return view('admin.financial.donation');
+        })->name('admin.financial.donation');
+        Route::post('/financial/donation', [FinancialController::class, 'storeDonation'])->name('admin.financial.storeDonation');
 
-    // API Routes for Income/Expense Management
-    Route::post('/api/financial/income-source', [FinancialController::class, 'saveIncomeSource'])->name('api.financial.save-income-source');
-    Route::post('/api/financial/income-budget', [FinancialController::class, 'saveMonthlyIncomeBudget'])->name('api.financial.save-income-budget');
-    Route::post('/api/financial/income-actual', [FinancialController::class, 'saveMonthlyActualIncome'])->name('api.financial.save-income-actual');
-    Route::post('/api/financial/expense', [FinancialController::class, 'saveExpense'])->name('api.financial.save-expense');
-    Route::post('/api/financial/expense-budget', [FinancialController::class, 'saveMonthlyExpenseBudget'])->name('api.financial.save-expense-budget');
-    Route::get('/api/financial/income-sources', [FinancialController::class, 'getIncomeSources'])->name('api.financial.get-income-sources');
-    Route::get('/api/financial/expenses', [FinancialController::class, 'getExpenses'])->name('api.financial.get-expenses');
-    Route::get('/api/financial/budgets', [FinancialController::class, 'getBudgets'])->name('api.financial.get-budgets');
-    Route::delete('/api/financial/income-source/{id}', [FinancialController::class, 'deleteIncomeSource'])->name('api.financial.delete-income-source');
-    Route::delete('/api/financial/expense/{id}', [FinancialController::class, 'deleteExpense'])->name('api.financial.delete-expense');
-    
-    // API Routes for Savings Goals
-    Route::post('/api/financial/savings-goal', [FinancialController::class, 'saveSavingsGoal'])->name('api.financial.save-savings-goal');
-    Route::get('/api/financial/savings-goals', [FinancialController::class, 'getSavingsGoals'])->name('api.financial.get-savings-goals');
-    Route::put('/api/financial/savings-goal/{id}', [FinancialController::class, 'updateSavingsGoal'])->name('api.financial.update-savings-goal');
-    Route::delete('/api/financial/savings-goal/{id}', [FinancialController::class, 'deleteSavingsGoal'])->name('api.financial.delete-savings-goal');
-    
-    // API Routes for Donations
-    Route::post('/api/financial/donation', [FinancialController::class, 'saveDonation'])->name('api.financial.save-donation');
-    Route::get('/api/financial/donations', [FinancialController::class, 'getDonations'])->name('api.financial.get-donations');
-    Route::delete('/api/financial/donation/{id}', [FinancialController::class, 'deleteDonation'])->name('api.financial.delete-donation');
-    
-    // Income Transactions (Legacy)
-    Route::get('/financial/income/create', [FinancialController::class, 'createIncome'])->name('admin.financial.createIncome');
-    Route::post('/financial/income/store', [FinancialController::class, 'storeIncome'])->name('admin.financial.storeIncome');
-    
-    // Expense Transactions (Legacy)
-    Route::get('/financial/expense/create', [FinancialController::class, 'createExpense'])->name('admin.financial.createExpense');
-    Route::post('/financial/expense/store', [FinancialController::class, 'storeExpense'])->name('admin.financial.storeExpense');
-    
-    // Savings Transactions (Legacy)
-    Route::get('/financial/savings/create', [FinancialController::class, 'createSavings'])->name('admin.financial.createSavings');
-    Route::post('/financial/savings/store', [FinancialController::class, 'storeSavings'])->name('admin.financial.storeSavings');
-    
-    // Transactions
-    Route::get('/financial/transactions', [FinancialController::class, 'transactions'])->name('admin.financial.transactions');
-    Route::get('/financial/transactions/create', [FinancialController::class, 'createTransaction'])->name('admin.financial.createTransaction');
-    Route::post('/financial/transactions', [FinancialController::class, 'storeTransaction'])->name('admin.financial.storeTransaction');
-    Route::get('/financial/transactions/{transaction}', [FinancialController::class, 'showTransaction'])->name('admin.financial.showTransaction');
-    Route::post('/financial/transactions/{transaction}/approve', [FinancialController::class, 'approveTransaction'])->name('admin.financial.approveTransaction');
-    Route::post('/financial/transactions/{transaction}/reject', [FinancialController::class, 'rejectTransaction'])->name('admin.financial.rejectTransaction');
-    Route::delete('/financial/transactions/{transaction}', [FinancialController::class, 'destroyTransaction'])->name('admin.financial.destroyTransaction');
-    
-    // Budgets
-    Route::get('/financial/budgets', [FinancialController::class, 'budgets'])->name('admin.financial.budgets');
-    Route::get('/financial/budgets/create', [FinancialController::class, 'createBudget'])->name('admin.financial.createBudget');
-    Route::post('/financial/budgets', [FinancialController::class, 'storeBudget'])->name('admin.financial.storeBudget');
-    
-    // Invoices
-    Route::get('/financial/invoices', [FinancialController::class, 'invoices'])->name('admin.financial.invoices');
-    Route::get('/financial/invoices/create', [FinancialController::class, 'createInvoice'])->name('admin.financial.createInvoice');
-    Route::post('/financial/invoices', [FinancialController::class, 'storeInvoice'])->name('admin.financial.storeInvoice');
-    Route::post('/financial/invoices/{invoice}/send', [FinancialController::class, 'sendInvoice'])->name('admin.financial.sendInvoice');
-    Route::post('/financial/invoices/{invoice}/mark-paid', [FinancialController::class, 'markInvoicePaid'])->name('admin.financial.markInvoicePaid');
+        // API Routes for Income/Expense Management
+        Route::post('/api/financial/income-source', [FinancialController::class, 'saveIncomeSource'])->name('api.financial.save-income-source');
+        Route::post('/api/financial/income-budget', [FinancialController::class, 'saveMonthlyIncomeBudget'])->name('api.financial.save-income-budget');
+        Route::post('/api/financial/income-actual', [FinancialController::class, 'saveMonthlyActualIncome'])->name('api.financial.save-income-actual');
+        Route::post('/api/financial/expense', [FinancialController::class, 'saveExpense'])->name('api.financial.save-expense');
+        Route::post('/api/financial/expense-budget', [FinancialController::class, 'saveMonthlyExpenseBudget'])->name('api.financial.save-expense-budget');
+        Route::get('/api/financial/income-sources', [FinancialController::class, 'getIncomeSources'])->name('api.financial.get-income-sources');
+        Route::get('/api/financial/expenses', [FinancialController::class, 'getExpenses'])->name('api.financial.get-expenses');
+        Route::get('/api/financial/budgets', [FinancialController::class, 'getBudgets'])->name('api.financial.get-budgets');
+        Route::delete('/api/financial/income-source/{id}', [FinancialController::class, 'deleteIncomeSource'])->name('api.financial.delete-income-source');
+        Route::delete('/api/financial/expense/{id}', [FinancialController::class, 'deleteExpense'])->name('api.financial.delete-expense');
+        
+        // API Routes for Savings Goals
+        Route::post('/api/financial/savings-goal', [FinancialController::class, 'saveSavingsGoal'])->name('api.financial.save-savings-goal');
+        Route::get('/api/financial/savings-goals', [FinancialController::class, 'getSavingsGoals'])->name('api.financial.get-savings-goals');
+        Route::put('/api/financial/savings-goal/{id}', [FinancialController::class, 'updateSavingsGoal'])->name('api.financial.update-savings-goal');
+        Route::delete('/api/financial/savings-goal/{id}', [FinancialController::class, 'deleteSavingsGoal'])->name('api.financial.delete-savings-goal');
+        
+        // API Routes for Donations
+        Route::post('/api/financial/donation', [FinancialController::class, 'saveDonation'])->name('api.financial.save-donation');
+        Route::get('/api/financial/donations', [FinancialController::class, 'getDonations'])->name('api.financial.get-donations');
+        Route::delete('/api/financial/donation/{id}', [FinancialController::class, 'deleteDonation'])->name('api.financial.delete-donation');
+        
+        // API Routes for Income Accounts
+        Route::post('/api/financial/account', [FinancialController::class, 'createAccount'])->name('api.financial.create-account');
+        Route::get('/api/financial/accounts', [FinancialController::class, 'getAccounts'])->name('api.financial.get-accounts');
+        Route::put('/api/financial/account/{id}', [FinancialController::class, 'updateAccount'])->name('api.financial.update-account');
+        Route::delete('/api/financial/account/{id}', [FinancialController::class, 'deleteAccount'])->name('api.financial.delete-account');
+        
+        // Income Transactions (Legacy)
+        Route::get('/financial/income/create', [FinancialController::class, 'createIncome'])->name('admin.financial.createIncome');
+        Route::post('/financial/income/store', [FinancialController::class, 'storeIncome'])->name('admin.financial.storeIncome');
+        
+        // Expense Transactions (Legacy)
+        Route::get('/financial/expense/create', [FinancialController::class, 'createExpense'])->name('admin.financial.createExpense');
+        Route::post('/financial/expense/store', [FinancialController::class, 'storeExpense'])->name('admin.financial.storeExpense');
+        
+        // Savings Transactions (Legacy)
+        Route::get('/financial/savings/create', [FinancialController::class, 'createSavings'])->name('admin.financial.createSavings');
+        Route::post('/financial/savings/store', [FinancialController::class, 'storeSavings'])->name('admin.financial.storeSavings');
+        
+        // Transactions
+        Route::get('/financial/transactions', [FinancialController::class, 'transactions'])->name('admin.financial.transactions');
+        Route::get('/financial/transactions/create', [FinancialController::class, 'createTransaction'])->name('admin.financial.createTransaction');
+        Route::post('/financial/transactions', [FinancialController::class, 'storeTransaction'])->name('admin.financial.storeTransaction');
+        Route::get('/financial/transactions/{transaction}', [FinancialController::class, 'showTransaction'])->name('admin.financial.showTransaction');
+        Route::post('/financial/transactions/{transaction}/approve', [FinancialController::class, 'approveTransaction'])->name('admin.financial.approveTransaction');
+        Route::post('/financial/transactions/{transaction}/reject', [FinancialController::class, 'rejectTransaction'])->name('admin.financial.rejectTransaction');
+        Route::delete('/financial/transactions/{transaction}', [FinancialController::class, 'destroyTransaction'])->name('admin.financial.destroyTransaction');
+        
+        // Budgets
+        Route::get('/financial/budgets', [FinancialController::class, 'budgets'])->name('admin.financial.budgets');
+        Route::get('/financial/budgets/create', [FinancialController::class, 'createBudget'])->name('admin.financial.createBudget');
+        Route::post('/financial/budgets', [FinancialController::class, 'storeBudget'])->name('admin.financial.storeBudget');
+        
+        // Invoices
+        Route::get('/financial/invoices', [FinancialController::class, 'invoices'])->name('admin.financial.invoices');
+        Route::get('/financial/invoices/create', [FinancialController::class, 'createInvoice'])->name('admin.financial.createInvoice');
+        Route::post('/financial/invoices', [FinancialController::class, 'storeInvoice'])->name('admin.financial.storeInvoice');
+        Route::post('/financial/invoices/{invoice}/send', [FinancialController::class, 'sendInvoice'])->name('admin.financial.sendInvoice');
+        Route::post('/financial/invoices/{invoice}/mark-paid', [FinancialController::class, 'markInvoicePaid'])->name('admin.financial.markInvoicePaid');
+    });
 });
 
 Route::get('/', function () {

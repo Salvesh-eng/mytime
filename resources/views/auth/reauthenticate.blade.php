@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Mytime</title>
+    <title>Verify Identity - Mytime</title>
     <link rel="icon" type="image/png" href="/pictures/logo.png">
     <style>
         * {
@@ -39,12 +39,12 @@
             z-index: 0;
         }
 
-        .login-wrapper {
+        .reauthenticate-wrapper {
             position: relative;
             z-index: 1;
         }
 
-        .login-container {
+        .reauthenticate-container {
             background-color: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(12px);
             border-radius: 20px;
@@ -54,6 +54,7 @@
             padding: 48px;
             border: 1px solid rgba(255, 255, 255, 0.18);
             animation: fadeIn 0.6s ease;
+            margin: 20px;
         }
 
         @keyframes fadeIn {
@@ -67,36 +68,42 @@
             }
         }
 
-        .login-header {
+        .reauthenticate-header {
             text-align: center;
             margin-bottom: 32px;
         }
 
-        .logo {
-            width: 180px;
-            height: 180px;
-            margin: 0 auto 24px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-            overflow: hidden;
-            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+        .security-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            display: inline-block;
+            animation: pulse 2s infinite;
         }
 
-        .logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
         }
 
-        .login-subtitle {
-            color: rgba(255, 255, 255, 0.85);
+        .reauthenticate-title {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .reauthenticate-subtitle {
+            color: rgba(255, 255, 255, 0.75);
             font-size: 14px;
             font-weight: 500;
             letter-spacing: 0.5px;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            line-height: 1.5;
         }
 
         .form-group {
@@ -161,7 +168,7 @@
             margin-bottom: 0;
         }
 
-        .btn-login {
+        .btn-verify {
             width: 100%;
             padding: 12px 16px;
             background: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%);
@@ -177,185 +184,100 @@
             margin-top: 8px;
         }
 
-        .btn-login:hover {
+        .btn-verify:hover {
             filter: brightness(0.95);
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
         }
 
-        .btn-login:active {
+        .btn-verify:active {
             transform: translateY(0);
         }
 
-        .login-footer {
+        .security-info {
+            background-color: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 12px;
+            line-height: 1.5;
+            backdrop-filter: blur(8px);
+        }
+
+        .security-info strong {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .reauthenticate-footer {
             text-align: center;
             margin-top: 24px;
             padding-top: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .login-footer a {
+        .reauthenticate-footer a {
             color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
             font-size: 12px;
             transition: color 0.3s ease;
-            margin: 0 8px;
         }
 
-        .login-footer a:hover {
+        .reauthenticate-footer a:hover {
             color: rgba(255, 255, 255, 0.95);
         }
 
-        /* Tablet and smaller screens */
-        @media (max-width: 768px) {
-            body {
-                background-attachment: scroll;
-            }
-
-            .login-container {
-                max-width: 95%;
-                padding: 40px 28px;
-                margin: 20px;
-            }
-
-            .logo {
-                width: 160px;
-                height: 160px;
-                margin: 0 auto 24px;
-            }
-
-            .login-header {
-                margin-bottom: 28px;
-            }
-
-            .form-group input {
-                padding: 11px 13px;
-                font-size: 16px;
-            }
-
-            .btn-login {
-                padding: 11px 14px;
-                font-size: 14px;
-            }
+        .user-info {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 13px;
+            text-align: center;
+            backdrop-filter: blur(8px);
         }
 
-        /* Small phones */
+        .user-info strong {
+            color: rgba(255, 255, 255, 0.95);
+            display: block;
+            margin-bottom: 4px;
+        }
+
         @media (max-width: 480px) {
-            .login-container {
+            .reauthenticate-container {
                 max-width: 90%;
                 padding: 28px 20px;
                 margin: 16px;
             }
 
-            .logo {
-                width: 120px;
-                height: 120px;
-                margin: 0 auto 16px;
+            .reauthenticate-title {
+                font-size: 20px;
             }
 
-            .login-header {
-                margin-bottom: 24px;
-            }
-
-            .login-subtitle {
-                font-size: 12px;
-            }
-
-            .form-group {
-                margin-bottom: 16px;
-            }
-
-            .form-group label {
-                font-size: 12px;
-                margin-bottom: 6px;
-            }
-
-            .form-group input {
-                padding: 10px 12px;
-                font-size: 16px;
-                border-radius: 8px;
-            }
-
-            .btn-login {
-                padding: 10px 12px;
-                font-size: 13px;
-                margin-top: 6px;
-            }
-
-            .login-footer {
-                margin-top: 20px;
-                padding-top: 16px;
-            }
-
-            .login-footer a {
-                font-size: 11px;
-                margin: 0 4px;
-            }
-        }
-
-        /* Extra small phones (landscape) */
-        @media (max-height: 500px) {
-            .login-container {
-                padding: 24px 20px;
-            }
-
-            .logo {
-                width: 100px;
-                height: 100px;
-                margin: 0 auto 12px;
-            }
-
-            .login-header {
-                margin-bottom: 16px;
-            }
-
-            .form-group {
-                margin-bottom: 12px;
-            }
-
-            .login-footer {
-                margin-top: 12px;
-                padding-top: 12px;
-            }
-        }
-
-        /* Large screens */
-        @media (min-width: 1024px) {
-            .login-container {
-                max-width: 450px;
-                padding: 56px;
-            }
-
-            .logo {
-                width: 200px;
-                height: 200px;
-                margin: 0 auto 28px;
-            }
-
-            .login-header {
-                margin-bottom: 36px;
-            }
-
-            .form-group input {
-                padding: 13px 15px;
-                font-size: 15px;
-            }
-
-            .btn-login {
-                padding: 13px 18px;
-                font-size: 16px;
+            .security-icon {
+                font-size: 48px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="login-wrapper">
-        <div class="login-container">
-            <div class="login-header">
-                <div class="logo">
-                    <img src="/pictures/logo.png" alt="Mytime Logo">
-                </div>
-                <p class="login-subtitle">Time • Refined • Elevated</p>
+    <div class="reauthenticate-wrapper">
+        <div class="reauthenticate-container">
+            <div class="reauthenticate-header">
+                <div class="security-icon">🔐</div>
+                <h1 class="reauthenticate-title">Verify Your Identity</h1>
+                <p class="reauthenticate-subtitle">For security purposes, please enter your password to access the Financial section</p>
+            </div>
+
+            <div class="user-info">
+                <strong>{{ auth()->user()->name }}</strong>
+                {{ auth()->user()->email }}
+            </div>
+
+            <div class="security-info">
+                <strong>🛡️ Security Notice:</strong> This is a sensitive area. We require password verification to protect your financial data.
             </div>
 
             @if($errors->any())
@@ -368,26 +290,19 @@
                 </div>
             @endif
 
-            <form method="POST" action="/login">
+            <form method="POST" action="/reauthenticate">
                 @csrf
 
                 <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="your@email.com" required autofocus>
-                </div>
-
-                <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required autofocus>
                 </div>
 
-                <button type="submit" class="btn-login">Sign In</button>
+                <button type="submit" class="btn-verify">🔓 Verify & Continue</button>
             </form>
 
-            <div class="login-footer">
-                <a href="#">Forgot password?</a>
-                <span style="color: rgba(255, 255, 255, 0.3);">•</span>
-                <a href="#">Contact support</a>
+            <div class="reauthenticate-footer">
+                <a href="/admin/dashboard">← Back to Dashboard</a>
             </div>
         </div>
     </div>

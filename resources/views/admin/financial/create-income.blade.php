@@ -214,6 +214,7 @@
                 <option value="travel" {{ old('category') == 'travel' ? 'selected' : '' }}>✈️ Travel</option>
                 <option value="utilities" {{ old('category') == 'utilities' ? 'selected' : '' }}>⚡ Utilities</option>
                 <option value="marketing" {{ old('category') == 'marketing' ? 'selected' : '' }}>📢 Marketing</option>
+                <option value="savings" {{ old('category') == 'savings' ? 'selected' : '' }}>🏦 Savings</option>
                 <option value="other" {{ old('category') == 'other' ? 'selected' : '' }}>📌 Other</option>
             </select>
         </div>

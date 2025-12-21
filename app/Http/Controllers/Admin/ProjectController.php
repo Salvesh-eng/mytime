@@ -135,7 +135,7 @@ class ProjectController extends Controller
             $template->increment('usage_count');
         }
 
-        return redirect()->route('admin.projects.show', $project)
+        return redirect()->route('admin.projects.index')
             ->with('success', 'Project created successfully!');
     }
 
